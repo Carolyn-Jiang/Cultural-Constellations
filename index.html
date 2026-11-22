@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>
+      How Does AI Interpret and Reshape Culture? · Cultural Constellations
+    </title>
+    <meta
+      name="description"
+      content="Explore how AI interprets and reshapes culture in museum objects, copyright and provenance, calligraphy, music, and translation. A bilingual research atlas."
+    />
+    <link rel="icon" href="assets/compass.svg" />
+    <link rel="stylesheet" href="assets/atlas.css" />
+  </head>
+  <body>
+    <header class="head">
+      <div class="headin wrap">
+        <a class="brand" href="#atlas" aria-label="AI + Humanity"
+          ><svg viewBox="0 0 40 40" aria-hidden="true">
+            <circle
+              cx="20"
+              cy="20"
+              r="14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width=".7"
+            />
+            <path
+              d="M20 1l2.4 14.2L34 7l-8.8 10.7L39 20l-14.2 2.2L33 33l-10.8-8.1L20 39l-2.3-14.3L7 33l8.3-10.8L1 20l14.2-2.3L7 7l10.8 8.2z"
+              fill="none"
+              stroke="currentColor"
+            />
+            <circle cx="20" cy="20" r="2.4" fill="currentColor" /></svg
+          ><span>AI <small>+</small> <i>Humanity</i></span></a
+        >
+        <nav class="topnav">
+          <a href="#atlas" data-i="atlas"></a
+          ><a href="#theory" data-i="theory"></a>
+        </nav>
+        <div class="langs" role="group" aria-label="Language">
+          <button id="zh" lang="zh-Hans">中文</button
+          ><button id="en" lang="en">EN</button>
+        </div>
+      </div>
+    </header>
+    <main class="wrap">
+      <noscript
+        >Please enable JavaScript to explore the research atlas. 请启用
+        JavaScript 浏览研究星图。</noscript
+      >
+      <section id="atlas">
+        <div class="mast">
+          <div>
+            <div class="ey" data-i="ey"></div>
+            <h1 data-i="title"></h1>
+          </div>
+          <p class="intro" data-i="intro"></p>
+        </div>
+        <div class="atlasrow">
+          <section id="plot" class="plotbox">
+            <div class="plothead">
+              <span class="title" data-i="plot"></span
+              ><span class="legend"
+                ><i class="keyline"></i><span data-i="rel"></span
+                ><i class="keynode"></i><span data-i="pr"></span></span
+              ><button class="mobiletoggle" id="zoom"></button>
+            </div>
+            <div class="mapviewport">
+              <svg
+                id="map"
+                class="map"
+                viewBox="0 0 1000 685"
+                role="group"
+              ></svg>
+              <div class="edgeinfo" id="tip" role="tooltip" hidden></div>
+            </div>
+            <div class="plotfoot">
+              <span class="hint" data-i="hint"></span
+              ><span class="metalkey" data-i="gold"></span>
+            </div>
+          </section>
+          <aside id="details" class="details" aria-live="polite"></aside>
+        </div>
+      </section>
+      <section id="theory"><div id="theory-inner"></div></section>
+      <footer class="ath-footer">
+        <span>AI + Humanity</span><a href="#atlas" data-i="back"></a>
+      </footer>
+    </main>
+    <script src="assets/catalog.js"></script>
+    <script src="assets/framework.js"></script>
+    <script src="assets/atlas.js"></script>
+  </body>
+</html>
