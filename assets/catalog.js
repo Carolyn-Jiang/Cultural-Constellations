@@ -133,9 +133,9 @@ const CAT = {
   },
 };
 const ART = {
-  athena: "assets/athena.webp",
-  diting: "assets/diting.webp",
-  fuxi: "assets/fuxi.webp",
-  qiuniu: "assets/qiuniu.webp",
-  themis: "assets/themis.webp",
+  athena: "assets/athena.webp?v=2",
+  diting: "assets/diting.webp?v=2",
+  fuxi: "assets/fuxi.webp?v=2",
+  qiuniu: "assets/qiuniu.webp?v=2",
+  themis: "assets/themis.webp?v=2",
 };
