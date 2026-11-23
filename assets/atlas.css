@@ -159,6 +159,10 @@ p {
 }
 .sky-page {
   isolation: isolate;
+  --rail-space: var(--rail-w);
+}
+.sky-page.rail-tucked {
+  --rail-space: 30px;
 }
 #graph-scene {
   overflow: hidden;
@@ -903,6 +907,9 @@ p {
   background: linear-gradient(90deg, #0b121bf7, #0c131cf2);
   border-right: 1px solid #b69e702e;
   box-shadow: 18px 0 40px -28px #000;
+  transition:
+    transform 0.46s cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.46s;
 }
 .rail::after {
   content: "";
@@ -913,9 +920,66 @@ p {
   width: 46px;
   background: linear-gradient(90deg, #0a111a66, #0a111a00);
   pointer-events: none;
+  transition: opacity 0.46s;
+}
+/* Tucked away, the rail leaves only its edge tab in view. */
+.rail.is-tucked {
+  transform: translateX(-100%);
+  box-shadow: none;
+}
+.rail.is-tucked::after {
+  opacity: 0;
 }
 .rail-handle {
+  position: absolute;
+  z-index: 1;
+  left: 100%;
+  top: calc(var(--head-h, 66px) + 18px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  width: 30px;
+  min-height: 58px;
+  padding: 11px 0 12px;
+  border: 1px solid #b69e7066;
+  border-left: 0;
+  border-radius: 0 8px 8px 0;
+  background: #0c131cf2;
+  color: var(--gold);
+  box-shadow: 6px 6px 18px -10px #000;
+  transition:
+    color 0.15s,
+    background-color 0.15s;
+}
+.rail-handle::before {
+  content: "‹";
+  font: 24px/0.8 var(--serif);
+}
+.rail.is-tucked .rail-handle::before {
+  content: "›";
+}
+.rail-handle:hover {
+  background: #16212c;
+  color: var(--pale);
+}
+.rail-handle:focus-visible {
+  outline-offset: 2px;
+}
+.handle-bar {
   display: none;
+}
+.handle-text {
+  display: none;
+  writing-mode: vertical-rl;
+  font: 600 12.5px/1 var(--sans);
+  letter-spacing: 0.16em;
+}
+:lang(en) .handle-text {
+  letter-spacing: 0.06em;
+}
+.rail.is-tucked .handle-text {
+  display: block;
 }
 .rail-scroll {
   position: absolute;
@@ -1052,7 +1116,7 @@ p {
   position: fixed;
   z-index: 7;
   top: calc(var(--head-h, 66px) + 2px);
-  left: calc(var(--rail-w) + var(--gutter));
+  left: calc(var(--rail-space) + var(--gutter));
   right: var(--right-edge);
   display: flex;
   align-items: center;
@@ -1153,7 +1217,7 @@ p {
 .sky-controls {
   position: fixed;
   z-index: 7;
-  left: calc(var(--rail-w) + var(--gutter));
+  left: calc(var(--rail-space) + var(--gutter));
   right: var(--right-edge);
   bottom: var(--bottom-edge);
   display: flex;
@@ -1325,24 +1389,46 @@ p {
   .rail::after {
     content: none;
   }
+  .rail.is-tucked {
+    transform: none;
+  }
   .rail-handle {
+    position: static;
     display: flex;
     flex: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 5px;
+    width: auto;
     min-height: 44px;
     padding: 7px 16px 6px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
     color: var(--gold);
     font: 600 12.5px/1.2 var(--sans);
     letter-spacing: 0.08em;
   }
+  .rail-handle::before {
+    content: none;
+  }
+  .rail-handle:hover {
+    background: none;
+  }
   .handle-bar {
+    display: block;
     width: 38px;
     height: 4px;
     border-radius: 2px;
     background: #8d7b57;
+  }
+  .handle-text {
+    display: block;
+    writing-mode: horizontal-tb;
+    font: inherit;
+    letter-spacing: inherit;
   }
   .handle-text::after {
     content: " ⌃";

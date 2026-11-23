@@ -208,6 +208,11 @@
     tourKeys: ["← → 切换", "← → to move"],
     railOpen: ["展开理论基础与立场", "Open the foundation and stance"],
     railClose: ["收起理论", "Close the theory"],
+    railTuck: ["收起侧栏", "Hide the side panel"],
+    railShow: [
+      "展开侧栏：理论基础与立场",
+      "Show the side panel: foundation & stance",
+    ],
   };
 
   // ── Shorthand ──────────────────────────────────────────────────────────
@@ -239,9 +244,11 @@
     u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
 
   let lang = +!navigator.language.toLowerCase().startsWith("zh");
+  let tuckedAtStart = false;
   try {
     const saved = localStorage.getItem("atlas-language");
     if (saved) lang = +(saved === "en");
+    tuckedAtStart = localStorage.getItem("atlas-rail") === "tucked";
   } catch {}
   const urlLang = new URL(location.href).searchParams.get("lang");
   if (["en", "zh"].includes(urlLang)) lang = +(urlLang === "en");
@@ -301,6 +308,7 @@
     railView = "stance",
     railIndex = null,
     revealTheory = false,
+    railTucked = false,
     lastURL = location.href,
     noteEntrance = null,
     captionEntrance = null,
@@ -527,6 +535,7 @@
     }
     if (active.kind === "theory" && !indexOpen) {
       railOpen = true;
+      railTucked = false;
       revealTheory = true;
     } else if (active.kind !== "home" || indexOpen) railOpen = false;
   }
@@ -608,13 +617,22 @@
       // The theory re-renders in place; the reader's place in the rail stays.
       railScroll.scrollTop = before;
     }
+    const tucked = railTucked && wide.matches;
     atlas.classList.toggle("rail-open", railOpen);
+    atlas.classList.toggle("rail-tucked", tucked);
     rail.classList.toggle("is-open", railOpen);
-    railHandle.setAttribute("aria-expanded", String(railOpen));
+    rail.classList.toggle("is-tucked", tucked);
+    // Hidden content stays out of the keyboard's way.
+    railScroll.inert = tucked;
+    const label = wide.matches
+      ? t(tucked ? "railShow" : "railTuck")
+      : t(railOpen ? "railClose" : "railOpen");
     railHandle.setAttribute(
-      "aria-label",
-      railOpen ? t("railClose") : t("railOpen"),
+      "aria-expanded",
+      String(wide.matches ? !tucked : railOpen),
     );
+    railHandle.setAttribute("aria-label", label);
+    railHandle.title = label;
   }
   // Bring the theory, and the first lines of its open reading, into view.
   function showTheory(animate) {
@@ -890,7 +908,11 @@
       header.getBoundingClientRect().bottom,
       tourBar.hidden ? 0 : tourBar.getBoundingClientRect().bottom,
     );
-    const left = wide.matches ? rail.offsetLeft + rail.offsetWidth : 0;
+    const left = !wide.matches
+      ? 0
+      : railTucked
+        ? 30
+        : rail.offsetLeft + rail.offsetWidth;
     const bottom = Math.min(
       toolbar.getBoundingClientRect().top,
       wide.matches ? h : rail.offsetTop,
@@ -1739,11 +1761,16 @@
   $("#zoom-in").onclick = () => zoom(1.24, centreOfMap(), true);
   $("#zoom-out").onclick = () => zoom(1 / 1.24, centreOfMap(), true);
   railHandle.onclick = () => {
-    railOpen = !railOpen;
+    if (wide.matches) {
+      railTucked = !railTucked;
+      try {
+        localStorage.setItem("atlas-rail", railTucked ? "tucked" : "open");
+      } catch {}
+    } else railOpen = !railOpen;
     syncRail();
     measure();
     transition(true);
-    if (railOpen) showTheory(false);
+    if (!wide.matches && railOpen) showTheory(false);
   };
   function setLanguage(n) {
     if (n === lang) return;
@@ -1990,7 +2017,7 @@
   const viewportObserver = new ResizeObserver(() => {
     const previous = surfaceSize;
     measure();
-    if (previous !== surfaceSize) transition(false);
+    if (previous !== surfaceSize) transition(travelling);
   });
   for (const el of [stage, header, toolbar, tourBar, rail])
     viewportObserver.observe(el);
@@ -2007,6 +2034,7 @@
   createNodes();
   createLinks();
   translateStatic();
+  railTucked = tuckedAtStart;
   enter(location.hash);
   if (active.kind !== "theory") railOpen = false;
   measure();
