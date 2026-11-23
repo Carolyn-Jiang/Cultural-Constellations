@@ -363,59 +363,164 @@
     disciplines,
     processes,
   };
-  const contextual = {
+  const modes = {
+    anthropology: ["人类学", "Anthropology"],
+    disciplines: ["六个学科", "Six disciplines"],
+    processes: ["六类认知过程", "Six processes"],
+    ai: ["AI ↔ 认知科学", "AI ↔ Cognition"],
+  };
+  const starts = {
     anthropology: [
-      ["disciplines", 0, ["从人类学提问", "Ask an anthropological question"]],
-      ["fields", null, ["追踪五个文化领域", "Follow the five cultural fields"]],
+      0,
+      ["同一次眨眼可以有几种意义？", "When does a blink become a wink?"],
+    ],
+    disciplines: [
+      2,
+      [
+        "语言学如何解释一个称谓？",
+        "How does a term of address convey a relationship?",
+      ],
+    ],
+    processes: [
+      3,
+      [
+        "怎样从笔画分析一幅作品？",
+        "How do individual strokes organise a work?",
+      ],
+    ],
+    ai: [
+      1,
+      [
+        "同样的判断可能来自哪些机制？",
+        "Can different mechanisms reach the same judgement?",
+      ],
+    ],
+  };
+  const connections = {
+    anthropology: [
+      [
+        "disciplines",
+        2,
+        [
+          "从公共意义到语言的共同基础",
+          "Connect shared meaning to common ground",
+        ],
+      ],
+      [
+        "processes",
+        3,
+        ["分析一条记录经过哪些转换", "Analyse how a record changes in transit"],
+      ],
     ],
     disciplines: [
       [
         "anthropology",
-        null,
-        ["追溯人类学基础", "Trace the anthropological foundation"],
+        0,
+        ["追溯格尔茨的厚描", "Trace this account to thick description"],
       ],
       [
         "processes",
-        null,
-        ["把问题落实为任务", "Connect this question to a task"],
+        4,
+        ["考察判断作品的标准", "Examine the criteria behind a judgement"],
       ],
-      ["ai", null, ["把解释写成模型", "Turn an account into a model"]],
+      [
+        "processes",
+        1,
+        ["理解译文中的社会关系", "Examine how a reader infers meaning"],
+      ],
+      [
+        "ai",
+        1,
+        ["比较两种分类机制", "Compare rival accounts of categorisation"],
+      ],
+      [
+        "ai",
+        1,
+        ["区分行为预测与神经机制", "Separate prediction from neural mechanism"],
+      ],
+      [
+        "ai",
+        0,
+        ["给可执行模型加上认知约束", "Give a model a cognitive constraint"],
+      ],
     ],
     processes: [
       [
         "disciplines",
-        null,
-        ["寻找可解释任务的学科", "Find a perspective on the task"],
+        3,
+        ["追问记忆怎样参与分类", "Ask how memory shapes categorisation"],
       ],
-      ["ai", null, ["把任务转为可检验的预测", "Derive a testable prediction"]],
-    ],
-    ai: [
-      ["disciplines", null, ["比较学科解释", "Compare disciplinary accounts"]],
+      [
+        "disciplines",
+        2,
+        ["用语用学解释称谓", "Interpret a term of address through pragmatics"],
+      ],
+      [
+        "disciplines",
+        5,
+        ["把程序写成一系列运算", "Specify a procedure as a computation"],
+      ],
+      [
+        "anthropology",
+        1,
+        [
+          "沿着中介关系分析改变",
+          "Follow a transformation through its mediators",
+        ],
+      ],
+      [
+        "disciplines",
+        1,
+        ["追问作品判断的依据", "Examine the grounds for judging a work"],
+      ],
       [
         "processes",
-        null,
-        ["确定预测涉及的认知过程", "Identify the process being predicted"],
+        4,
+        ["用明示标准评价作品", "Judge a work against explicit criteria"],
+      ],
+    ],
+    ai: [
+      [
+        "disciplines",
+        5,
+        [
+          "考察目标、表征与运算",
+          "Examine goals, representations and operations",
+        ],
+      ],
+      [
+        "disciplines",
+        3,
+        [
+          "推导分类错误的不同模式",
+          "Predict different patterns of classification error",
+        ],
       ],
     ],
   };
-  const readings = {
-    anthropology: [
-      "pothen",
-      ["看藏品来源如何判断", "Explore cultural attribution in Pothen"],
+  const studies = {
+    pothen: ["Pothen · 藏品的文化归属", "Pothen · Cultural attribution"],
+    polytropos: [
+      "Polytropos · 藏品描述与重建",
+      "Polytropos · Object descriptions",
     ],
-    disciplines: [
-      "diting",
-      ["看谛听怎样研究翻译", "Explore translation in DITING"],
-    ],
-    processes: [
-      "polytropos",
-      ["看 Polytropos 的描述任务", "Examine description in Polytropos"],
-    ],
-    ai: [
-      "polytropos",
-      ["看 Polytropos 如何评测模型", "See how Polytropos evaluates models"],
-    ],
+    diting: ["谛听 · 文学翻译评测", "DITING · Literary translation"],
   };
+  const studyIds = {
+    anthropology: ["pothen", "polytropos"],
+    disciplines: ["pothen", "pothen", "diting", "pothen", null, "polytropos"],
+    processes: ["pothen", "diting", null, "polytropos", "diting", null],
+    ai: ["polytropos", "pothen"],
+  };
+  function modeNav(view, l) {
+    const buttons = Object.entries(modes)
+      .map(
+        ([key, label]) =>
+          `<button type="button" data-view="${key}" class="fw-mode"${key === view ? ' aria-current="page"' : ""}>${label[l]}</button>`,
+      )
+      .join("");
+    return `<nav class="fw-modes" aria-label="${l ? "Theory topics" : "理论主题"}">${buttons}</nav>`;
+  }
   const source = (key) => {
     const [label, url] = sources[key];
     return (
@@ -454,7 +559,7 @@
           y +
           ')" aria-label="' +
           disciplines[i].name[l] +
-          '"><rect class="fw-hit" x="-77" y="-15" width="154" height="45" rx="4"/><circle class="fw-halo" r="10"/><circle class="fw-dot" r="4.4"/><text class="fw-node-name" y="25">' +
+          '"><rect class="fw-hit" x="-86" y="-33" width="172" height="75" rx="7"/><circle class="fw-halo" r="12"/><circle class="fw-dot" r="5.3"/><text class="fw-node-name" y="25">' +
           disciplines[i].name[l] +
           "</text></g>",
       )
@@ -476,8 +581,8 @@
   function pyramid(l) {
     const bands = processes.map((p, i) => {
       const row = 5 - i;
-      const top = 18 + row * 46,
-        bottom = top + 43,
+      const top = 6 + row * 67,
+        bottom = top + 63,
         a = row * 23,
         b = (row + 1) * 23;
       const points = [
@@ -501,7 +606,7 @@
         top +
         '" width="' +
         (443 - (192 - b)) +
-        '" height="44" rx="3"/><polygon class="fw-band" points="' +
+        '" height="66" rx="4"/><polygon class="fw-band" points="' +
         points +
         '"/><line class="fw-leader" x1="' +
         leader +
@@ -517,7 +622,7 @@
       );
     });
     return (
-      '<svg class="fw-pyramid" viewBox="0 0 480 317" role="group" aria-label="' +
+      '<svg class="fw-pyramid" viewBox="37 0 430 412" role="group" aria-label="' +
       words.processes[l] +
       '">' +
       bands.reverse().join("") +
@@ -556,31 +661,19 @@
     );
   }
   function nav(view, l, idx) {
-    const related = contextual[view]
-      .map(
-        ([next, choice, label]) =>
-          '<button type="button" data-view="' +
-          next +
-          '"' +
-          (choice !== null ? ' data-choice="' + choice + '"' : "") +
-          ">" +
-          label[l] +
-          ' <span aria-hidden="true">→</span></button>',
-      )
-      .join("");
-    let [id, label] = readings[view];
-    if (view === "disciplines" && idx !== 2) [id, label] = readings.processes;
-    return (
-      '<nav class="fw-links" aria-label="' +
-      (l ? "Follow a connection" : "沿关系继续") +
-      '">' +
-      related +
-      '<button type="button" data-paper="' +
-      id +
-      '">' +
-      label[l] +
-      ' <span aria-hidden="true">→</span></button></nav>'
-    );
+    const [start, prompt] = starts[view];
+    let related;
+    if (idx === null) {
+      related = `<button class="fw-start" type="button" data-start="${start}">${prompt[l]} <span aria-hidden="true">→</span></button>`;
+    } else {
+      const [target, choice, label] = connections[view][idx];
+      related = `<button type="button" data-view="${target}" data-choice="${choice}">${label[l]} <span aria-hidden="true">→</span></button>`;
+    }
+    const id = studyIds[view][idx ?? start];
+    const study = id
+      ? `<button type="button" class="fw-study" data-paper="${id}">${studies[id][l]} <span aria-hidden="true">↗</span></button>`
+      : "";
+    return `<nav class="fw-links" aria-label="${l ? "Related paths and research" : "相连的理论与研究"}">${related}${study}</nav>`;
   }
   function narrative(view, index, l, open) {
     if (index === null) return "";
@@ -654,6 +747,8 @@
     const root = document.getElementById("theory-inner");
     if (!root || !(view in screens)) return;
     const old = root.querySelector(".fw");
+    const float = root.closest(".theory-float");
+    const noteScroll = float?.scrollTop ?? 0;
     if (old && screens[old.dataset.view])
       screens[old.dataset.view].open =
         old.querySelector(".fw-reading details")?.open ?? false;
@@ -685,43 +780,122 @@
         : view === "processes"
           ? pyramid(l)
           : fork(view, l);
-    root.innerHTML =
-      '<div class="fw" data-view="' +
-      view +
-      '" lang="' +
-      (l ? "en" : "zh-CN") +
-      '"><header class="fw-header"><h2>' +
-      state.title[l] +
-      "</h2><p>" +
-      state.intro[l] +
-      '</p></header><div class="fw-body"><div class="fw-visual">' +
-      graphics +
-      (scope ? '<p class="fw-scope">' + scope + "</p>" : "") +
-      '</div><div class="fw-reading" id="fw-reading" aria-live="polite" aria-atomic="true"></div></div><div class="fw-nav"></div></div>';
+    root.innerHTML = `<div class="fw" data-view="${view}" lang="${l ? "en" : "zh-CN"}">${modeNav(view, l)}
+        <div class="fw-body">
+          <header class="fw-header"><h2>${state.title[l]}</h2><p>${state.intro[l]}</p></header>
+          <div class="fw-visual">${graphics}</div>
+          <div class="fw-companion">
+            ${scope ? '<p class="fw-scope">' + scope + "</p>" : ""}
+            <div class="fw-reading" id="fw-reading" aria-live="polite" aria-atomic="true"></div>
+            <div class="fw-nav"></div>
+          </div>
+        </div></div>`;
     showChoice(root, view, state.selection, l);
     const shell = root.querySelector(".fw");
-    function choose(idx, focus) {
+    if (float) float.scrollTop = old?.dataset.view === view ? noteScroll : 0;
+    function revealInNote(target, amount, smooth) {
+      const top = float.getBoundingClientRect().top + float.clientTop;
+      const floor = top + float.clientHeight - 8;
+      const header =
+        Math.max(
+          top,
+          shell.querySelector(".fw-modes").getBoundingClientRect().bottom,
+        ) + 4;
+      const bounds = target.getBoundingClientRect();
+      const end = bounds.top + Math.min(amount, bounds.height);
+      const delta =
+        bounds.top < header ? bounds.top - header : Math.max(0, end - floor);
+      if (Math.abs(delta) < 1) return;
+      const reduced = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      float.scrollBy({
+        top: delta,
+        behavior: smooth && !reduced ? "smooth" : "instant",
+      });
+    }
+    function choose(idx, focus, revealFocus = focus) {
       if (idx !== state.selection) state.open = false;
       else
         state.open = root.querySelector(".fw-reading details")?.open ?? false;
       showChoice(root, view, idx, l, focus);
+      root.querySelector("#fw-reading").dataset.choiceEntered = "";
+      if (float && revealFocus) {
+        revealInNote(
+          shell.querySelector('.fw-control[aria-pressed="true"]'),
+          Infinity,
+          false,
+        );
+      }
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        const marker = shell.querySelector(
+          '.fw-control[aria-pressed="true"] :is(.fw-halo,.fw-band,.fw-fork-title)',
+        );
+        if (marker?.animate) {
+          // Restart only this mark if the same option is pressed in quick succession.
+          marker
+            .getAnimations()
+            .find((effect) => effect.id === "fw-choice-pulse")
+            ?.cancel();
+          marker.animate(
+            [{ filter: "brightness(1.65)" }, { filter: "brightness(1)" }],
+            {
+              duration: 225,
+              easing: "cubic-bezier(.2,.7,.25,1)",
+              id: "fw-choice-pulse",
+            },
+          );
+        }
+      }
     }
     shell.addEventListener("click", (event) => {
       const origin = event.target.closest(
-        ".fw-control,[data-paper],button[data-view]",
+        ".fw-control,[data-start],[data-paper],button[data-view]",
       );
       if (!origin) return;
-      if (origin.matches(".fw-control"))
-        choose(Number(origin.dataset.id), false);
-      else if (origin.dataset.paper)
+      if (origin.matches(".fw-control") || origin.dataset.start !== undefined) {
+        const started = origin.dataset.start !== undefined;
+        choose(
+          Number(started ? origin.dataset.start : origin.dataset.id),
+          started,
+          started && !event.detail,
+        );
+        if (event.detail && float) {
+          revealInNote(root.querySelector("#fw-reading"), 110, true);
+        } else if (
+          event.detail &&
+          window.matchMedia("(max-width:760px)").matches
+        ) {
+          const detail = root.querySelector("#fw-reading");
+          if (detail.getBoundingClientRect().top > window.innerHeight - 125) {
+            detail.scrollIntoView({
+              block: "nearest",
+              behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+                .matches
+                ? "instant"
+                : "smooth",
+            });
+          }
+        }
+      } else if (origin.dataset.paper)
         window.explorePaper?.(origin.dataset.paper);
-      else
+      else if (origin.matches(".fw-mode") && origin.dataset.view === view) {
+        root
+          .querySelector('.fw-control[tabindex="0"]')
+          ?.focus({ preventScroll: true });
+      } else {
         window.exploreView?.(
           origin.dataset.view,
           origin.dataset.choice === undefined
             ? null
             : Number(origin.dataset.choice),
         );
+        if (origin.matches(".fw-mode")) {
+          document
+            .querySelector("#theory-inner .fw-mode[aria-current=page]")
+            ?.focus({ preventScroll: true });
+        }
+      }
     });
     shell.addEventListener("keydown", (event) => {
       const button = event.target.closest(".fw-control");

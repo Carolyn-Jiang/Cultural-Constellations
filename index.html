@@ -11,9 +11,10 @@
       content="Explore how AI interprets and reshapes culture in museum objects, copyright and provenance, calligraphy, music, and translation. A bilingual exploration of cultural interpretation."
     />
     <link rel="icon" href="assets/compass.svg" />
-    <link rel="stylesheet" href="assets/atlas.css?v=2" />
-    <link rel="stylesheet" href="assets/night-sky.css?v=2" />
-    <link rel="stylesheet" href="assets/framework.css?v=2" />
+    <link rel="stylesheet" href="assets/atlas.css?v=3" />
+    <link rel="stylesheet" href="assets/night-sky.css?v=3" />
+    <link rel="stylesheet" href="assets/framework.css?v=3" />
+    <link rel="stylesheet" href="assets/paper-index.css?v=3" />
   </head>
   <body>
     <header class="head">
@@ -36,6 +37,15 @@
             <circle cx="20" cy="20" r="2.4" fill="currentColor" /></svg
           ><span>AI <small>+</small> <i>Humanity</i></span></a
         >
+        <nav id="explore-nav" class="explore-nav" aria-label="Explore">
+          <a href="#atlas" data-mode="fields" data-i="fieldsNav"></a>
+          <a href="#papers" data-mode="papers" data-i="papersNav"></a>
+          <a
+            href="#theory/anthropology"
+            data-mode="framework"
+            data-i="theoryNav"
+          ></a>
+        </nav>
         <div class="langs" role="group" aria-label="Language">
           <button id="zh" lang="zh-Hans">中文</button
           ><button id="en" lang="en">EN</button>
@@ -48,58 +58,101 @@
         浏览研究内容。</noscript
       >
       <div id="atlas">
-        <div class="mast">
-          <div><h1 id="site-title" data-i="title"></h1></div>
-          <p class="intro">
-            <button type="button" id="enter-theory" data-i="intro"></button>
-          </p>
-        </div>
-        <nav id="trail" class="trail" aria-label="Exploration path"></nav>
-        <div class="graph-tools">
-          <span class="guide" id="graph-guide" aria-live="polite"></span>
-          <button id="all-fields" type="button" hidden></button>
-        </div>
-        <div
-          id="graph-scene"
-          class="graph-scene"
-          role="group"
-          aria-describedby="graph-guide"
-        >
-          <svg id="map" class="map" width="100%" height="100%" role="group">
-            <defs>
-              <linearGradient id="gold-line">
-                <stop stop-color="#d39d4e" />
-                <stop offset=".45" stop-color="#fff2ba" />
-                <stop offset="1" stop-color="#c89144" />
-              </linearGradient>
-            </defs>
-            <path id="pentagram" class="outline" aria-hidden="true" />
-            <g id="edges"></g>
-            <path
-              id="callout-line"
-              class="callout-line"
-              aria-hidden="true"
+        <div id="explore-surface">
+          <div class="intro-rail">
+            <header class="mast" id="mast"></header>
+            <nav
+              id="guided-route"
+              class="guided-route"
+              aria-label="Reading route"
               hidden
-            />
-          </svg>
-          <div id="nodes"></div>
-          <div id="tip" role="tooltip" class="edgeinfo" hidden></div>
-          <section
-            id="node-card"
-            class="node-card"
-            aria-labelledby="card-title"
-            hidden
-          ></section>
-        </div>
-        <div id="theory" hidden>
-          <div id="theory-inner" tabindex="-1"></div>
+            ></nav>
+            <nav id="home-paths" class="home-paths"></nav>
+          </div>
+          <div class="map-shell">
+            <div class="canvas-bar">
+              <button
+                type="button"
+                class="back-step"
+                id="back-step"
+                hidden
+              ></button>
+              <nav id="trail" class="trail" aria-label="Exploration path"></nav>
+              <div class="camera-tools">
+                <button id="zoom-out" type="button" aria-label="Zoom out">
+                  −
+                </button>
+                <button id="zoom-in" type="button" aria-label="Zoom in">
+                  +
+                </button>
+                <button id="view-all" type="button"></button>
+              </div>
+            </div>
+            <div
+              id="graph-scene"
+              class="graph-scene"
+              role="group"
+              aria-describedby="graph-guide"
+            >
+              <svg id="map" class="map" width="100%" height="100%" role="group">
+                <defs>
+                  <linearGradient id="gold-line">
+                    <stop stop-color="#d39d4e" />
+                    <stop offset=".45" stop-color="#fff2ba" />
+                    <stop offset="1" stop-color="#c89144" />
+                  </linearGradient>
+                </defs>
+                <path id="pentagram" class="outline" aria-hidden="true" />
+                <g id="edges"></g>
+                <path
+                  id="callout-line"
+                  class="callout-line"
+                  aria-hidden="true"
+                  hidden
+                />
+              </svg>
+              <div id="nodes"></div>
+              <nav id="portals" aria-label="Connected papers"></nav>
+              <div id="tip" role="tooltip" class="edgeinfo" hidden></div>
+              <section
+                id="node-card"
+                class="node-card"
+                aria-labelledby="card-title"
+                hidden
+              ></section>
+              <section id="theory" class="theory-float" hidden>
+                <button
+                  type="button"
+                  class="float-close"
+                  data-close="theory"
+                ></button>
+                <div id="theory-inner" tabindex="-1"></div>
+              </section>
+              <div id="index-drawer" hidden>
+                <div class="drawer-heading">
+                  <h2 data-i="papersNav"></h2>
+                  <button
+                    type="button"
+                    class="float-close"
+                    data-close="index"
+                  ></button>
+                </div>
+                <div id="paper-index" tabindex="-1"></div>
+              </div>
+            </div>
+            <div class="graph-tools">
+              <span class="guide" id="graph-guide" aria-live="polite"></span>
+            </div>
+          </div>
         </div>
       </div>
     </main>
-    <script src="assets/night-sky.js?v=2"></script>
-    <script src="assets/catalog.js?v=2"></script>
-    <script src="assets/relations.js?v=2"></script>
-    <script src="assets/framework.js?v=2"></script>
-    <script src="assets/atlas.js?v=2"></script>
+    <script src="assets/night-sky.js?v=3"></script>
+    <script src="assets/catalog.js?v=3"></script>
+    <script src="assets/relations.js?v=3"></script>
+    <script src="assets/framework.js?v=3"></script>
+    <script src="assets/paper-index.js?v=3"></script>
+    <script src="assets/spatial-layout.js?v=3"></script>
+    <script src="assets/atlas.js?v=3"></script>
   </body>
 </html>
