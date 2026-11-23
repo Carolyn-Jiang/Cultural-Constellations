@@ -75,8 +75,8 @@
     changeField: ["切换领域", "Change field"],
     back: ["上一步", "Back"],
     lead: [
-      "从一件藏品、一幅墨迹或一段旋律出发，追踪文化意义如何改变。",
-      "Begin with a museum object, a brushstroke or a melody, and trace how its meaning changes.",
+      "从{museum:一件藏品}、{calligraphy:一幅墨迹}或{music:一段旋律}出发，追踪文化意义如何改变。",
+      "Begin with {museum:a museum object}, {calligraphy:a brushstroke} or {music:a melody}, and trace how its meaning changes.",
     ],
     start: ["开始论文导览", "Start the paper trail"],
     published: ["公开论文", "Public papers"],
@@ -121,6 +121,27 @@
     return: ["返回五个领域", "All five fields"],
     close: ["收起文字", "Close reading"],
     graph: ["研究关系图谱", "Research connections"],
+    paperKind: ["公开论文", "Public paper"],
+    topicKind: ["研究主题", "Research topic"],
+    nextStop: ["下一篇 · ", "Next · "],
+    tourKeys: ["← → 切换导览论文", "← → to move along the trail"],
+    searchKey: ["论文与主题（快捷键 /）", "Research index (shortcut /)"],
+    homeGuide: [
+      "点选徽记展开，拖动漫游，滚轮、双指或双击缩放。",
+      "Choose an emblem to explore. Drag to move • Scroll, pinch or double-click to zoom.",
+    ],
+    theoryGuide: [
+      "点选理论节点，展开解释。",
+      "Select a concept to unfold its explanation.",
+    ],
+    conceptGuide: [
+      "触碰金线看关联，点相邻节点继续。",
+      "Follow a gold line or select a neighbouring node.",
+    ],
+    paperGuide: [
+      "点金线上的圆结阅读关联，或点相邻星点继续。",
+      "Select a knot on a gold line to read a connection, or a neighbouring star to continue.",
+    ],
   };
   const lenses = {
     pothen: [
@@ -152,7 +173,9 @@
     card = $("#node-card"),
     theory = $("#theory"),
     drawer = $("#index-drawer"),
+    caption = $("#field-caption"),
     tip = $("#tip");
+  const finePointer = matchMedia("(hover: hover) and (pointer: fine)");
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const esc = (s) =>
     String(s).replace(
@@ -190,6 +213,7 @@
     frame = 0,
     surfaceSize = "",
     pinned = null,
+    previewKey = null,
     layoutResult = null,
     lastURL = location.href;
   let introDismissed = false;
@@ -204,8 +228,15 @@
   let drag = null,
     pinch = null;
   const ghostLinks = new Set();
-  const arrivals = new WeakMap();
-  let noteEntrance = null;
+  const arrivals = new WeakMap(),
+    blooms = new WeakMap();
+  let noteEntrance = null,
+    captionEntrance = null,
+    surfacing = [],
+    travelling = false;
+  const easeInOut = (u) =>
+    u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+  const easeOut = (u) => 1 - Math.pow(1 - u, 3);
   const focusKey = (a) =>
     a.kind === "paper"
       ? paperKey(a.id)
@@ -394,13 +425,31 @@
       '<h1 id="site-title">' +
       title +
       '</h1><p class="home-lead">' +
-      esc(t("lead")) +
+      esc(t("lead")).replace(
+        /\{(\w+):([^}]+)\}/g,
+        (_, id, words) =>
+          '<a class="lead-link" href="#field/' +
+          id +
+          '" data-field="' +
+          id +
+          '">' +
+          words +
+          "</a>",
+      ) +
       '</p><div class="start-row">' +
       route("#guide/pothen", t("start"), "primary-action") +
       "</div>";
     $("#zoom-in").setAttribute("aria-label", lang ? "Zoom in" : "放大");
     $("#zoom-out").setAttribute("aria-label", lang ? "Zoom out" : "缩小");
     $("#view-all").textContent = lang ? "Fit network" : "全景";
+    // Shortcuts are announced where they act, and shown on hover.
+    $("#zoom-in").title = (lang ? "Zoom in" : "放大") + " (+)";
+    $("#zoom-out").title = (lang ? "Zoom out" : "缩小") + " (−)";
+    $("#view-all").title =
+      (lang ? "Show the whole network" : "显示完整图谱") + " (Home)";
+    const indexLink = $('#explore-nav a[data-mode="papers"]');
+    indexLink.title = t("searchKey");
+    indexLink.setAttribute("aria-keyshortcuts", "/");
     tourBar.setAttribute("aria-label", t("tourName"));
     $("#trail").setAttribute(
       "aria-label",
@@ -519,22 +568,28 @@
     }
     $("#graph-guide").textContent =
       active.kind === "home"
-        ? lang
-          ? "Choose an emblem to explore. Drag to move • Scroll or pinch to zoom."
-          : "点选徽记展开，拖动漫游，滚轮或双指缩放。"
+        ? t("homeGuide")
         : active.kind === "field"
-          ? l(question[active.id])
+          ? t("pick")
           : active.kind === "theory"
-            ? lang
-              ? "Select a concept to unfold its explanation."
-              : "点选理论节点，展开解释。"
-            : lang
-              ? "Follow a gold line or select a neighbouring node."
-              : "触碰金线看关联，点相邻节点继续。";
+            ? t("theoryGuide")
+            : active.kind === "concept"
+              ? t("conceptGuide")
+              : active.guided && finePointer.matches
+                ? t("paperGuide") + " " + t("tourKeys")
+                : t("paperGuide");
     for (const f of fields) {
       const el = nodes.get(fieldKey(f.id));
       el.setAttribute("aria-expanded", String(groups.has(f.id)));
       el.querySelector(".switch").textContent = groups.has(f.id) ? "−" : "+";
+      // A faint ring marks papers already opened in this visit.
+      for (const id of f.papers)
+        nodes
+          .get(paperKey(id))
+          .classList.toggle(
+            "is-read",
+            read.has(id) && !(active.kind === "paper" && active.id === id),
+          );
     }
     for (const [key, el] of nodes) {
       const selected = key === focusKey(active);
@@ -568,22 +623,30 @@
     const id = active.id,
       item = CAT[id],
       pub = item.links.length > 0,
-      lens = lenses[id];
+      lens = lenses[id],
+      home = owner[id];
     const resources = item.links
       .map(
         (v) =>
-          '<a href="' +
+          '<a class="card-resource" href="' +
           esc(v.url) +
           '" target="_blank" rel="noopener noreferrer">' +
           esc(l(v.label)) +
-          "</a>",
+          '<span aria-hidden="true"> ↗</span></a>',
       )
       .join("");
+    // data-pair lets a hovered row light up its gold line in the sky.
     const follow = pairs(id)
       .map(
         (r) =>
           '<a href="#paper/' +
           other(r, id) +
+          '" data-paper="' +
+          other(r, id) +
+          '" data-pair="' +
+          r.a +
+          "--" +
+          r.b +
           '"><b>' +
           esc(linkLabel(r, id)) +
           "</b><span>" +
@@ -591,21 +654,53 @@
           "</span></a>",
       )
       .join("");
+    let trail = "";
+    if (active.guided) {
+      const i = tour.indexOf(id),
+        prev = tour[i - 1],
+        next = tour[i + 1];
+      trail =
+        '<nav class="card-tour" aria-label="' +
+        esc(t("tourName")) +
+        '"><span class="card-step">' +
+        (i + 1) +
+        " / " +
+        tour.length +
+        "</span>" +
+        (prev
+          ? route("#guide/" + prev, "‹ " + l(CAT[prev].short), "tour-prev")
+          : "") +
+        route(
+          next ? "#guide/" + next : "#papers",
+          next ? t("nextStop") + l(CAT[next].short) + " ›" : t("end"),
+          "tour-next",
+        ) +
+        "</nav>";
+    }
     card.dataset.anchor = id;
     card.classList.toggle("topic", !pub);
     card.innerHTML =
       '<button type="button" class="card-close" data-close="paper" aria-label="' +
       t("close") +
-      '">×</button><h2 id="card-title">' +
+      '">×</button><p class="card-eyebrow">' +
+      route("#field/" + home.id, l(home.name)) +
+      "<span>" +
+      esc(t(pub ? "paperKind" : "topicKind")) +
+      '</span></p><h2 id="card-title">' +
       esc(l(item.title)) +
       "</h2>" +
+      // Unpublished work shows only its topic; its links stay in the sky around it.
       (pub
         ? "<p>" +
           esc(l(item.description)) +
           '</p><div class="card-links">' +
           resources +
           (lens
-            ? route("#theory/" + lens[0] + "/" + lens[1], l(lens[2]))
+            ? route(
+                "#theory/" + lens[0] + "/" + lens[1],
+                l(lens[2]),
+                "card-lens",
+              )
             : "") +
           '</div><nav class="follow-papers" aria-label="' +
           t("connections") +
@@ -613,9 +708,69 @@
           t("connections") +
           "</strong>" +
           follow +
-          "</nav>"
+          "</nav>" +
+          trail
         : "");
     card.scrollTop = 0;
+  }
+  // A field's question surfaces beside its emblem, on the side facing the centre.
+  function renderCaption() {
+    const f =
+      active.kind === "field" && !indexOpen ? fieldById[active.id] : null;
+    caption.hidden = !f;
+    if (f) caption.textContent = l(question[f.id]);
+  }
+  function placeCaption(screen, w, h) {
+    if (caption.hidden) return;
+    const key = fieldKey(active.id),
+      p = screen[key],
+      el = nodes.get(key);
+    if (!p || !el || p.x < 0 || p.x > w || p.y < 0 || p.y > h) {
+      caption.style.visibility = "hidden";
+      return;
+    }
+    const r = el.offsetWidth / 2,
+      label = el.querySelector(".node-label");
+    const half = Math.max(r, (label?.offsetWidth || 0) / 2);
+    const box = {
+      left: p.x - half,
+      right: p.x + half,
+      top: p.y - r,
+      bottom: Math.max(
+        p.y + r,
+        p.y - r + (label ? label.offsetTop + label.offsetHeight : 0),
+      ),
+    };
+    const centre = screen.core || { x: w / 2, y: h / 2 };
+    let dx = centre.x - p.x,
+      dy = centre.y - p.y;
+    const length = Math.hypot(dx, dy);
+    [dx, dy] = length < 1 ? [0, 1] : [dx / length, dy / length];
+    const cx = (box.left + box.right) / 2,
+      cy = (box.top + box.bottom) / 2;
+    const exit = Math.min(
+      Math.abs(dx) > 0.001 ? (box.right - cx) / Math.abs(dx) : Infinity,
+      Math.abs(dy) > 0.001 ? (box.bottom - cy) / Math.abs(dy) : Infinity,
+    );
+    const ax = cx + dx * (exit + 16),
+      ay = cy + dy * (exit + 16);
+    const align = dx > 0.45 ? "left" : dx < -0.45 ? "right" : "center";
+    if (caption.dataset.align !== align) {
+      caption.dataset.align = align;
+      caption.style.textAlign = align;
+    }
+    const cw = caption.offsetWidth,
+      ch = caption.offsetHeight,
+      room = readingBounds(w, h);
+    // Lean the text away from the emblem: an edge touches the anchor unless the
+    // direction is nearly perpendicular, in which case the text centres on it.
+    const x = dx > 0.45 ? ax : dx < -0.45 ? ax - cw : ax - cw / 2;
+    const y = dy > 0.45 ? ay : dy < -0.45 ? ay - ch : ay - ch / 2;
+    caption.style.left =
+      clamp(x, room.left, Math.max(room.left, room.right - cw)) + "px";
+    caption.style.top =
+      clamp(y, room.top, Math.max(room.top, room.bottom - ch)) + "px";
+    caption.style.visibility = "";
   }
   const SVG = "http://www.w3.org/2000/svg";
   function svg(tag, attrs = {}) {
@@ -717,6 +872,12 @@
           gleam = svg("path", { class: "gleam", pathLength: 100 }),
           spark = svg("circle", { class: "travel-light", r: 3 });
         group.append(hit, ink, gleam, spark);
+        // A knot at the midpoint shows that a paper-to-paper line can be read.
+        const knot =
+          dataLink.kind === "paper"
+            ? svg("circle", { class: "knot", r: 5.5 })
+            : null;
+        if (knot) group.append(knot);
         $("#edges").append(group);
         item = {
           group,
@@ -724,6 +885,7 @@
           ink,
           gleam,
           spark,
+          knot,
           ...dataLink,
           born: animate ? performance.now() : -10000,
         };
@@ -779,7 +941,7 @@
       usableHeight = room.bottom - room.top;
     const topic = el === card && el.classList.contains("topic");
     el.style.maxWidth =
-      Math.floor(topic ? Math.min(300, usableWidth) : usableWidth) + "px";
+      Math.floor(topic ? Math.min(380, usableWidth) : usableWidth) + "px";
     const width = el.offsetWidth;
     const gap = el === theory ? 42 : 40;
     const baseHeight = Math.min(
@@ -842,6 +1004,8 @@
         a = document.createElement("a");
       a.className = "jump-node";
       a.dataset.jump = id;
+      a.dataset.paper = id;
+      a.dataset.pair = r.a + "--" + r.b;
       a.href = "#paper/" + id;
       a.textContent = l(CAT[id].short);
       a.setAttribute("aria-label", l(CAT[id].short) + " · " + l(r.label));
@@ -1005,6 +1169,11 @@
       e.spark.setAttribute("cx", tx);
       e.spark.setAttribute("cy", ty);
       const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      if (e.knot) {
+        e.knot.setAttribute("cx", mid.x);
+        e.knot.setAttribute("cy", mid.y);
+        e.knot.style.opacity = u < 1 ? 0 : "";
+      }
       e.group.setAttribute(
         "tabindex",
         mid.x > 0 && mid.x < w && mid.y > 0 && mid.y < h ? "0" : "-1",
@@ -1012,10 +1181,13 @@
     }
     const note = displayNote();
     positionPortals(screen, w, h, note);
+    placeCaption(screen, w, h);
   }
   function clearTip() {
     pinned = null;
+    previewKey = null;
     tip.hidden = true;
+    tip.classList.remove("node-tip");
     for (const e of links.values()) {
       e.group.classList.remove("hot");
       e.group.removeAttribute("aria-describedby");
@@ -1050,22 +1222,38 @@
     };
     const note = !card.hidden ? card : !theory.hidden ? theory : null;
     const avoid = [];
-    if (note && note.style.visibility !== "hidden") {
-      avoid.push({
-        left: note.offsetLeft,
-        right: note.offsetLeft + note.offsetWidth,
-        top: note.offsetTop,
-        bottom: note.offsetTop + note.offsetHeight,
-      });
-    }
+    const noteRect =
+      note && note.style.visibility !== "hidden"
+        ? {
+            left: note.offsetLeft,
+            right: note.offsetLeft + note.offsetWidth,
+            top: note.offsetTop,
+            bottom: note.offsetTop + note.offsetHeight,
+          }
+        : null;
+    if (noteRect) avoid.push(noteRect);
+    const around = (p, r) => ({
+      left: p.x - r,
+      right: p.x + r,
+      top: p.y - r,
+      bottom: p.y + r,
+    });
+    avoid.push(around(a, 22), around(b, 22), around(mid, 9));
     const candidates = [
       { x: mid.x - width / 2, y: mid.y - height - 10 },
       { x: mid.x - width / 2, y: mid.y + 10 },
       { x: mid.x + 12, y: mid.y - height / 2 },
       { x: mid.x - width - 12, y: mid.y - height / 2 },
     ];
-    if (avoid.length) {
-      const r = avoid[0];
+    for (const f of [0.25, 0.75]) {
+      const q = { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
+      candidates.push(
+        { x: q.x - width / 2, y: q.y - height - 10 },
+        { x: q.x - width / 2, y: q.y + 10 },
+      );
+    }
+    if (noteRect) {
+      const r = noteRect;
       candidates.push(
         { x: mid.x - width / 2, y: r.top - height - 6 },
         { x: mid.x - width / 2, y: r.bottom + 6 },
@@ -1082,6 +1270,115 @@
       fits.find((r) => avoid.every((n) => !overlaps(r, n, 3))) || fits[0];
     tip.style.left = pos.left + "px";
     tip.style.top = pos.top + "px";
+  }
+  // Hovering a node previews what selecting it would open.
+  function previewOf(key) {
+    if (key === "core") return [t("foundation"), t("anthropology"), t("intro")];
+    if (key.startsWith("field-")) {
+      const f = fieldById[key.slice(6)];
+      return f && [l(f.guardian), l(f.name), l(question[f.id])];
+    }
+    if (key.startsWith("paper-")) {
+      const item = CAT[key.slice(6)];
+      return (
+        item && [
+          t(item.links.length ? "paperKind" : "topicKind"),
+          l(item.title),
+          l(item.relation),
+        ]
+      );
+    }
+    return null;
+  }
+  function showPreview(el) {
+    const key = el?.dataset.key;
+    if (!key || key === previewKey || pinned || dragging || travelling) return;
+    if (key === currentFocus && active.kind !== "home") return;
+    const info = previewOf(key);
+    if (!info) return;
+    clearTip();
+    previewKey = key;
+    tip.classList.add("node-tip");
+    tip.innerHTML =
+      "<small>" +
+      esc(info[0]) +
+      "</small><strong>" +
+      esc(info[1]) +
+      "</strong>" +
+      esc(info[2]);
+    const room = readingBounds(stage.clientWidth, stage.clientHeight);
+    tip.style.maxWidth = Math.min(300, room.right - room.left) + "px";
+    tip.style.maxHeight = "";
+    tip.style.overflowY = "";
+    tip.style.pointerEvents = "";
+    tip.tabIndex = -1;
+    tip.hidden = false;
+    const s = stage.getBoundingClientRect();
+    const box = {
+      left: Infinity,
+      right: -Infinity,
+      top: Infinity,
+      bottom: -Infinity,
+    };
+    for (const part of [el, el.querySelector(".node-label")]) {
+      if (!part) continue;
+      const r = part.getBoundingClientRect();
+      box.left = Math.min(box.left, r.left - s.left);
+      box.right = Math.max(box.right, r.right - s.left);
+      box.top = Math.min(box.top, r.top - s.top);
+      box.bottom = Math.max(box.bottom, r.bottom - s.top);
+    }
+    const width = tip.offsetWidth,
+      height = tip.offsetHeight,
+      cx = (box.left + box.right) / 2,
+      cy = (box.top + box.bottom) / 2;
+    const note = !card.hidden ? card : !theory.hidden ? theory : null;
+    const avoid = [box];
+    if (note && note.style.visibility !== "hidden")
+      avoid.push({
+        left: note.offsetLeft,
+        right: note.offsetLeft + note.offsetWidth,
+        top: note.offsetTop,
+        bottom: note.offsetTop + note.offsetHeight,
+      });
+    const fits = [
+      { x: cx - width / 2, y: box.top - height - 8 },
+      { x: cx - width / 2, y: box.bottom + 8 },
+      { x: box.right + 10, y: cy - height / 2 },
+      { x: box.left - width - 10, y: cy - height / 2 },
+    ].map((p) => {
+      const x = clamp(p.x, room.left, Math.max(room.left, room.right - width));
+      const y = clamp(p.y, room.top, Math.max(room.top, room.bottom - height));
+      return { left: x, right: x + width, top: y, bottom: y + height };
+    });
+    const pos =
+      fits.find((r) => avoid.every((n) => !overlaps(r, n, 2))) || fits[0];
+    tip.style.left = pos.left + "px";
+    tip.style.top = pos.top + "px";
+  }
+  function hidePreview() {
+    if (!previewKey) return;
+    previewKey = null;
+    tip.hidden = true;
+    tip.classList.remove("node-tip");
+  }
+  // Rows in the reading surfaces light up the line and star they lead to.
+  function linkPreview(target, on) {
+    const row = target.closest?.("[data-paper],[data-field]");
+    if (!row || row.closest("#theory")) return;
+    if (row.dataset.field) {
+      nodes
+        .get(fieldKey(row.dataset.field))
+        ?.classList.toggle("is-preview", on);
+      return;
+    }
+    const id = row.dataset.paper;
+    links.get(row.dataset.pair || id)?.group.classList.toggle("linked", on);
+    nodes.get(paperKey(id))?.classList.toggle("is-preview", on);
+  }
+  function clearLinkPreviews() {
+    for (const e of links.values()) e.group.classList.remove("linked");
+    for (const n of nodes.values()) n.classList.remove("is-preview");
   }
   function noteMetrics() {
     const node = !card.hidden ? card : !theory.hidden ? theory : null;
@@ -1149,6 +1446,61 @@
       theoryOpen,
     });
   }
+  // A camera flight follows van Wijk and Nuij's smooth zoom: a long move widens
+  // the view slightly, travels, then settles, so the visual centre glides.
+  function flight(from, to) {
+    const W = stage.clientWidth || 1,
+      H = stage.clientHeight || 1;
+    const view = (c) => [
+      (W / 2 - c.x) / c.scale,
+      (H / 2 - c.y) / c.scale,
+      W / c.scale,
+    ];
+    const [ux0, uy0, w0] = view(from),
+      [ux1, uy1, w1] = view(to);
+    const rho = 1.15,
+      rho2 = rho * rho,
+      rho4 = rho2 * rho2;
+    const dx = ux1 - ux0,
+      dy = uy1 - uy0,
+      d2 = dx * dx + dy * dy;
+    let S, at;
+    if (d2 < 1e-6) {
+      S = Math.log(w1 / w0) / rho;
+      at = (t) => [ux0 + t * dx, uy0 + t * dy, w0 * Math.exp(rho * t * S)];
+    } else {
+      const d1 = Math.sqrt(d2),
+        r0 = -Math.asinh(
+          (w1 * w1 - w0 * w0 + rho4 * d2) / (2 * w0 * rho2 * d1),
+        ),
+        r1 = -Math.asinh(
+          (w1 * w1 - w0 * w0 - rho4 * d2) / (2 * w1 * rho2 * d1),
+        ),
+        c0 = Math.cosh(r0);
+      S = (r1 - r0) / rho;
+      at = (t) => {
+        const s = rho * t * S + r0;
+        const u = (w0 / (rho2 * d1)) * (c0 * Math.tanh(s) - Math.sinh(r0));
+        return [ux0 + u * dx, uy0 + u * dy, (w0 * c0) / Math.cosh(s)];
+      };
+    }
+    const linear = (t) => ({
+      x: from.x + (to.x - from.x) * t,
+      y: from.y + (to.y - from.y) * t,
+      scale: from.scale + (to.scale - from.scale) * t,
+    });
+    if (!Number.isFinite(S)) return { duration: 570, camAt: linear };
+    return {
+      duration: clamp((Math.abs(S) * 1000 * rho) / Math.SQRT2, 560, 1100),
+      camAt(t) {
+        if (t >= 1) return { ...to };
+        const [cx, cy, width] = at(t),
+          scale = W / width;
+        const cam = { scale, x: W / 2 - cx * scale, y: H / 2 - cy * scale };
+        return Number.isFinite(cam.x + cam.y + cam.scale) ? cam : linear(t);
+      },
+    };
+  }
   function transition(animate, savedCamera = null, holdCamera = false) {
     cancelAnimationFrame(frame);
     const result = compute();
@@ -1163,7 +1515,10 @@
     const previous = world,
       starts = {},
       ends = {},
-      leaving = [];
+      leaving = [],
+      delays = {},
+      siblings = {};
+    const path = flight(fromCam, toCam);
     for (const [k, node] of nodes) {
       if (visibleKeys.has(k)) {
         const parent = node.dataset.project
@@ -1187,7 +1542,12 @@
           arrivals.get(node).cancel();
           arrivals.delete(node);
         }
-        if (!previous[k] && animate && !reduced.matches)
+        blooms.get(node)?.cancel();
+        if (!previous[k] && animate && !reduced.matches) {
+          // Siblings unfold one after another rather than all at once.
+          const order = (siblings[bornAt] = (siblings[bornAt] ?? -1) + 1);
+          delays[k] = Math.min(0.3, order * 0.085);
+          const delay = delays[k] * path.duration;
           arrivals.set(
             node,
             node.animate(
@@ -1196,9 +1556,24 @@
                 { opacity: 0, offset: 0.11 },
                 { opacity: 1 },
               ],
-              { duration: 370, fill: "backwards" },
+              { duration: 420, delay, fill: "backwards" },
             ),
           );
+          const mark = node.querySelector(".coin,.star,.theory-dot");
+          if (mark)
+            blooms.set(
+              node,
+              mark.animate(
+                [{ scale: 0.3 }, { scale: 1.14, offset: 0.68 }, { scale: 1 }],
+                {
+                  duration: 560,
+                  delay,
+                  easing: "cubic-bezier(.2,.7,.3,1)",
+                  fill: "backwards",
+                },
+              ),
+            );
+        }
       } else if (previous[k] && animate && !reduced.matches) {
         const parent = node.dataset.project
           ? fieldKey(owner[node.dataset.project].id)
@@ -1221,7 +1596,8 @@
           if (anim.playState === "finished") anim.cancel();
     }
     syncLinks(graphLinks(visibleKeys), animate);
-    if (!animate || reduced.matches) {
+    travelling = animate && !reduced.matches;
+    if (!travelling) {
       camera = { ...toCam };
       world = Object.fromEntries(
         [...visibleKeys].map((k) => [k, result.world[k]]),
@@ -1230,19 +1606,20 @@
       return;
     }
     const began = performance.now(),
-      duration = 570;
+      duration = path.duration;
     function tick(now) {
       const u = clamp((now - began) / duration, 0, 1),
-        e = u * u * (3 - 2 * u);
-      camera = {
-        x: fromCam.x + (toCam.x - fromCam.x) * e,
-        y: fromCam.y + (toCam.y - fromCam.y) * e,
-        scale: fromCam.scale + (toCam.scale - fromCam.scale) * e,
-      };
+        e = easeInOut(u);
+      camera = path.camAt(e);
       world = {};
       for (const [k, end] of Object.entries(ends)) {
         const s = starts[k],
-          v = leaving.includes(k) ? Math.min(1, u * 2.6) : e;
+          d = delays[k] || 0,
+          v = leaving.includes(k)
+            ? Math.min(1, u * 2.6)
+            : k in delays
+              ? easeOut(clamp((u - d) / (1 - d), 0, 1))
+              : e;
         if (v === 1 && leaving.includes(k)) {
           nodes.get(k).hidden = true;
           continue;
@@ -1251,17 +1628,20 @@
       }
       paint(now);
       if (u < 1) frame = requestAnimationFrame(tick);
+      else travelling = false;
     }
     frame = requestAnimationFrame(tick);
   }
   function update(animate = true, savedCam = null) {
     clearTip();
+    clearLinkPreviews();
     for (const g of ghostLinks) g.remove();
     ghostLinks.clear();
     atlas.dataset.focus = active.kind;
     atlas.classList.toggle("index-open", indexOpen);
     syncIntro();
     buildControls();
+    renderCaption();
     renderNotes();
     measureViewport();
     noteMetrics();
@@ -1280,7 +1660,11 @@
           ? theory
           : null;
     noteEntrance?.cancel();
-    if (shown && animate && !reduced.matches)
+    captionEntrance?.cancel();
+    for (const part of surfacing) part.cancel();
+    surfacing = [];
+    if (!animate || reduced.matches) return;
+    if (shown) {
       noteEntrance = shown.animate(
         [
           { opacity: 0, translate: "0 7px" },
@@ -1289,9 +1673,48 @@
         ],
         { duration: 480, easing: "ease-out" },
       );
+      const parts =
+        shown === card
+          ? card.querySelectorAll(":scope > :not(.card-close)")
+          : shown === theory
+            ? theory.querySelectorAll(
+                ".fw-modes,.fw-header,.fw-visual,.fw-companion",
+              )
+            : drawer.querySelectorAll(".drawer-heading,.pi-toolbar,.pi-group");
+      parts.forEach((part, i) =>
+        surfacing.push(
+          part.animate(
+            [
+              { opacity: 0, translate: "0 9px", filter: "blur(2px)" },
+              { opacity: 1, translate: "0 0", filter: "blur(0)" },
+            ],
+            {
+              duration: 480,
+              delay: 170 + Math.min(i, 6) * 70,
+              easing: "cubic-bezier(.2,.7,.2,1)",
+              fill: "backwards",
+            },
+          ),
+        ),
+      );
+    }
+    if (!caption.hidden)
+      captionEntrance = caption.animate(
+        [
+          { opacity: 0, translate: "0 8px", filter: "blur(3px)" },
+          { opacity: 1, translate: "0 0", filter: "blur(0)" },
+        ],
+        {
+          duration: 640,
+          delay: 320,
+          easing: "cubic-bezier(.2,.7,.2,1)",
+          fill: "backwards",
+        },
+      );
   }
   function stopTravel() {
     cancelAnimationFrame(frame);
+    travelling = false;
     if (!layoutResult || !camera) return;
     world = Object.fromEntries(
       [...visibleKeys].map((k) => [k, world[k] || layoutResult.world[k]]),
@@ -1408,7 +1831,7 @@
   const getEdge = (target) => links.get(target.closest(".edge")?.dataset.id);
   map.addEventListener("pointerover", (e) => {
     const item = getEdge(e.target);
-    if (item && e.pointerType !== "touch") showTip(item);
+    if (item && e.pointerType !== "touch" && !travelling) showTip(item);
   });
   map.addEventListener("pointerout", (e) => {
     const item = getEdge(e.target);
@@ -1439,10 +1862,30 @@
     for (const e of links.values())
       if (e.a === key || e.b === key) e.group.classList.toggle("incident", on);
   }
-  layer.addEventListener("pointerover", (e) => trace(e.target, true));
-  layer.addEventListener("pointerout", (e) => trace(e.target, false));
-  layer.addEventListener("focusin", (e) => trace(e.target, true));
-  layer.addEventListener("focusout", (e) => trace(e.target, false));
+  layer.addEventListener("pointerover", (e) => {
+    trace(e.target, true);
+    if (e.pointerType !== "touch") showPreview(e.target.closest("[data-key]"));
+  });
+  layer.addEventListener("pointerout", (e) => {
+    trace(e.target, false);
+    const el = e.target.closest("[data-key]");
+    if (el && !el.contains(e.relatedTarget)) hidePreview();
+  });
+  layer.addEventListener("focusin", (e) => {
+    trace(e.target, true);
+    if (e.target.matches(":focus-visible"))
+      showPreview(e.target.closest("[data-key]"));
+  });
+  layer.addEventListener("focusout", (e) => {
+    trace(e.target, false);
+    hidePreview();
+  });
+  for (const host of [card, mast, drawer, $("#portals")]) {
+    host.addEventListener("pointerover", (e) => linkPreview(e.target, true));
+    host.addEventListener("pointerout", (e) => linkPreview(e.target, false));
+    host.addEventListener("focusin", (e) => linkPreview(e.target, true));
+    host.addEventListener("focusout", (e) => linkPreview(e.target, false));
+  }
   function pinchState() {
     const [a, b] = [...pointers.values()];
     return {
@@ -1571,11 +2014,47 @@
       fit();
     }
   });
+  // Double-click the open sky to zoom in there; Shift + double-click zooms out.
+  stage.addEventListener("dblclick", (e) => {
+    if (e.target.closest(readingSurface + ",button,a,.edge")) return;
+    e.preventDefault();
+    zoom(e.shiftKey ? 1 / 1.6 : 1.6, local(e), true);
+  });
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
     if (!tip.hidden) clearTip();
     else if (indexOpen) closeIndex();
     else if (showNote) closeReading();
+  });
+  // Shortcuts that work wherever the visitor is not typing or using a theory diagram.
+  document.addEventListener("keydown", (e) => {
+    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+    const target = e.target instanceof Element ? e.target : document.body;
+    if (target.closest("input,select,textarea,[contenteditable]")) return;
+    if (e.key === "/") {
+      e.preventDefault();
+      if (indexOpen)
+        drawer.querySelector("input")?.focus({ preventScroll: true });
+      else navigate("#papers");
+      return;
+    }
+    if (target === stage || target.closest(readingSurface + ",.fw")) return;
+    if (["+", "=", "-"].includes(e.key)) {
+      e.preventDefault();
+      zoom(
+        e.key === "-" ? 1 / 1.24 : 1.24,
+        { x: stage.clientWidth / 2, y: stage.clientHeight / 2 },
+        true,
+      );
+      return;
+    }
+    if (!active.guided || indexOpen) return;
+    const step = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+    const next = step && tour[tour.indexOf(active.id) + step];
+    if (next) {
+      e.preventDefault();
+      navigate("#guide/" + next);
+    }
   });
   window.addEventListener("pagehide", remember);
   window.addEventListener("popstate", restore);

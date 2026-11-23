@@ -702,3 +702,55 @@
     padding-inline: 0.35rem;
   }
 }
+
+/* Readability inside the floating theory note: room at the edges, tabs that
+   clear the close button, and two columns once the note is wide enough. */
+.theory-float #theory-inner .fw,
+#theory-inner.theory-float .fw {
+  padding: 0 1.15rem 1.1rem;
+}
+.theory-float .fw-modes {
+  margin-inline: -1.15rem;
+  padding-inline: 0.7rem 2.75rem;
+  background: var(--panel, #13202a);
+}
+.theory-float .fw-mode {
+  font-size: 0.88rem;
+}
+.theory-float .fw-header h2 {
+  font-size: clamp(1.4rem, 5cqi, 1.85rem);
+}
+.theory-float .fw-header p,
+.theory-float .fw-reading p {
+  font-size: 0.97rem;
+  line-height: 1.62;
+  color: #d3d7d0;
+}
+.theory-float .fw-reading details p {
+  font-size: 0.93rem;
+}
+:lang(zh) .theory-float :is(.fw-header p, .fw-reading p, .fw-scope) {
+  line-height: 1.78;
+  letter-spacing: 0.02em;
+}
+@container theory-note (min-width: 600px) {
+  .theory-float .fw-body {
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1fr);
+    grid-template-areas: "heading heading" "graphic companion";
+    column-gap: 1.6rem;
+    row-gap: 0.6rem;
+    align-items: start;
+  }
+  .theory-float .fw-visual .fw-hex {
+    max-width: 23.5rem;
+  }
+  .theory-float .fw-visual .fw-pyramid {
+    max-width: 19.5rem;
+  }
+  .theory-float .fw-reading {
+    margin-top: 0.15rem;
+  }
+  .theory-float .fw-scope {
+    margin-top: 0.2rem;
+  }
+}

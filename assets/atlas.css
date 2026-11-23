@@ -6,7 +6,9 @@
   --pale: #ffe1a3;
   --muted: #bdc3c4;
   --line: #b69e703c;
-  --serif: Georgia, "Songti SC", "Noto Serif CJK SC", STSong, serif;
+  --serif:
+    Georgia, "Noto Serif", "Times New Roman", "Songti SC", "Noto Serif CJK SC",
+    STSong, serif;
   --sans: "Avenir Next", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
 }
 * {
@@ -1919,5 +1921,495 @@ html[lang="zh-Hans"] .sky-intro h1 em {
   }
   .sky-controls .guide {
     font-size: 12px;
+  }
+}
+
+/* ── Readability ───────────────────────────────────────────────────────
+   Reading surfaces are opaque, labels carry a dark halo where lines cross
+   them, and a quiet scrim keeps the floating controls legible over the sky. */
+.graph-scene :is(.node-card, #theory, #index-drawer) {
+  --panel: #13202a;
+  /* Scroll shadows: a faint gold edge appears only where more text is hidden. */
+  background:
+    linear-gradient(var(--panel) 30%, #13202a00) center top / 100% 34px
+      no-repeat local,
+    linear-gradient(#13202a00, var(--panel) 70%) center bottom / 100% 34px
+      no-repeat local,
+    radial-gradient(farthest-side at 50% 0, #e3c07c47, #e3c07c00) center top /
+      100% 11px no-repeat scroll,
+    radial-gradient(farthest-side at 50% 100%, #e3c07c47, #e3c07c00) center
+      bottom / 100% 11px no-repeat scroll,
+    var(--panel);
+  border-color: #b99c66;
+  box-shadow:
+    0 18px 44px #02071199,
+    0 0 0 1px #00000038;
+}
+.theory-float > .float-close {
+  background: var(--panel, #13202a);
+}
+.card-close,
+.float-close {
+  border-radius: 50%;
+  transition: background-color 0.15s;
+}
+.card-close {
+  top: 4px;
+  right: 4px;
+  width: 38px;
+  height: 38px;
+  font-size: 23px;
+}
+.card-close:hover,
+.float-close:hover {
+  color: #fff;
+  background: #ffffff14;
+}
+.graph-scene .node-card {
+  padding: 17px 22px 19px;
+}
+.graph-scene .node-card.topic {
+  width: max-content;
+}
+.card-eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 10px;
+  margin: 0 0 8px;
+  padding-right: 30px;
+  font: 600 12px/1.45 var(--sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.card-eyebrow a {
+  color: var(--gold);
+  text-decoration: none;
+}
+.card-eyebrow a:hover {
+  color: var(--pale);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.card-eyebrow span {
+  padding: 1px 8px 2px;
+  border: 1px solid #8d7b5799;
+  border-radius: 999px;
+  color: #b9bfbb;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+.graph-scene .node-card h2 {
+  padding-right: 18px;
+  font-size: 22px;
+  line-height: 1.26;
+}
+.graph-scene .node-card p {
+  max-width: 62ch;
+  margin-top: 11px;
+  font-size: 15.5px;
+  line-height: 1.62;
+  color: #dfe3dc;
+}
+.node-card .card-links {
+  align-items: center;
+  gap: 10px 18px;
+  margin-top: 15px;
+}
+.card-links .card-resource {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border: 1px solid #d5b47699;
+  border-radius: 3px;
+  background: #d5b47614;
+  color: var(--pale);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+.card-links .card-resource:hover {
+  background: #e2c48b;
+  color: #151b21;
+}
+.card-links .card-lens {
+  font-weight: 500;
+  color: #e1ddce;
+  text-decoration-color: #a18d62;
+}
+.card-links .card-lens:hover {
+  color: var(--pale);
+}
+.graph-scene .follow-papers {
+  margin-top: 17px;
+  padding-top: 12px;
+  gap: 1px;
+}
+.follow-papers > strong {
+  margin-bottom: 3px;
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  color: #c9c3b1;
+}
+.graph-scene .follow-papers a {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  margin: 0 -9px;
+  padding: 7px 9px;
+  border-radius: 3px;
+  transition: background-color 0.15s;
+}
+.follow-papers a:after {
+  content: "→";
+  color: var(--gold);
+  opacity: 0.55;
+}
+.follow-papers a:is(:hover, :focus-visible) {
+  background: #d5b47617;
+}
+.follow-papers a:is(:hover, :focus-visible):after {
+  opacity: 1;
+}
+.graph-scene .follow-papers span {
+  font-size: 13.5px;
+  color: #ccd2cb;
+}
+.card-tour {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.card-step {
+  padding: 4px 9px;
+  border: 1px solid #8d7b57;
+  border-radius: 999px;
+  color: #d6ceb9;
+  font: 600 12px/1 var(--sans);
+  letter-spacing: 0.08em;
+}
+.card-tour .tour-prev {
+  color: #d3d6cf;
+  font-size: 14px;
+  text-decoration: none;
+}
+.card-tour .tour-prev:hover {
+  color: var(--pale);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.card-tour .tour-next {
+  margin-left: auto;
+  padding: 8px 14px;
+  border-radius: 3px;
+  background: #e2c48b;
+  color: #161b20;
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: none;
+}
+.card-tour .tour-next:hover {
+  background: #ffe3ad;
+}
+
+/* Labels: a halo hides the lines that pass behind them. */
+.node-label {
+  text-shadow:
+    0 0 2px #09111b,
+    0 0 4px #09111b,
+    0 0 8px #09111bf0,
+    0 0 14px #09111bc0;
+}
+.pnode .node-label,
+.tnode .node-label,
+.dnode .node-label {
+  padding: 2px 8px 3px;
+  border-radius: 12px;
+  background: radial-gradient(#0a121cd0 52%, #0a121c00 100%);
+}
+.foundation span {
+  text-shadow:
+    0 0 3px #09111b,
+    0 0 8px #09111b;
+}
+
+/* Floating controls sit on a scrim that dims whatever passes beneath them. */
+.scrim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+.scrim-top {
+  top: 0;
+  height: calc(var(--map-safe-top, 72px) + 14px);
+  background: linear-gradient(#080e17e8, #080e17b8 52%, #080e1700);
+}
+.scrim-bottom {
+  bottom: 0;
+  height: calc(var(--map-safe-bottom, 72px) + 30px);
+  background: linear-gradient(
+    #080e1700,
+    #080e178c 30%,
+    #080e17e0 55%,
+    #080e17f2
+  );
+}
+/* At home the layout keeps the stars clear of the controls; only the guide needs help. */
+.sky-page[data-focus="home"]:not(.index-open) .scrim-bottom {
+  height: var(--map-safe-bottom, 72px);
+  background: linear-gradient(#080e1700, #080e1799 40%, #080e17e6);
+}
+@media (forced-colors: active), print {
+  .scrim {
+    display: none;
+  }
+}
+.sky-controls .guide {
+  font-size: 15px;
+  color: #d8dad3;
+}
+.sky-crumbs .trail,
+.sky-crumbs .back-step {
+  font-size: 14px;
+}
+.leave-route {
+  font-size: 13px;
+}
+
+/* The opening call to action reads as a control, not a footnote. */
+.sky-intro .home-lead {
+  font-size: clamp(16px, 1.1vw, 19px);
+  color: #dcded7;
+}
+.sky-intro .primary-action {
+  gap: 10px;
+  margin-top: 8px;
+  padding: 6px 15px;
+  border: 1px solid #d5b47699;
+  border-radius: 3px;
+  background: #0d1823b8;
+  text-decoration: none;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+.sky-intro .primary-action::after {
+  content: "→";
+  margin: 0;
+  font: 16px/1 var(--sans);
+}
+.sky-intro .primary-action:hover {
+  background: #e2c48b;
+  color: #151b21;
+  text-shadow: none;
+}
+
+/* A field's question surfaces beside its emblem, facing the centre of the star. */
+.field-caption {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  top: 0;
+  width: max-content;
+  max-width: min(320px, 72vw);
+  margin: 0;
+  padding: 10px 22px 12px;
+  background: radial-gradient(
+    closest-side,
+    #0a121cc4,
+    #0a121c94 55%,
+    #0a121c00
+  );
+  color: #f1dfb8;
+  font: italic clamp(17px, 1.3vw, 21px) / 1.42 var(--serif);
+  text-wrap: balance;
+  pointer-events: none;
+  text-shadow:
+    0 0 2px #09111b,
+    0 0 6px #09111b,
+    0 0 12px #09111bf0,
+    0 0 22px #09111bb0;
+}
+:lang(zh) .field-caption {
+  font-style: normal;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
+}
+
+/* ── Interaction cues ────────────────────────────────────────────────── */
+.edge {
+  cursor: pointer;
+}
+.edge .knot {
+  pointer-events: visiblePainted;
+  fill: #0f1a24;
+  stroke: #e7c888;
+  stroke-width: 1.35;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    transform 0.16s ease-out,
+    fill 0.16s;
+}
+.edge:is(.hot, .linked, :focus-visible) .knot {
+  fill: #ffe7ad;
+  stroke: #fff6d8;
+  transform: scale(1.35);
+}
+.edge.linked .domain-link {
+  stroke: url(#gold-line);
+  stroke-width: 3;
+  stroke-dasharray: none;
+  filter: drop-shadow(0 0 3px #b98839);
+}
+.edge.linked .gleam {
+  opacity: 1;
+  animation: gleam 1.65s linear infinite;
+}
+.pnode .star {
+  transition:
+    scale 160ms ease,
+    filter 200ms ease,
+    color 200ms ease;
+}
+.pnode.is-preview .star {
+  color: #fff;
+  filter: drop-shadow(0 0 9px #ffe2a0);
+  scale: 1.3;
+}
+.pnode.is-preview .node-label {
+  color: var(--pale);
+}
+.pnode:hover .star {
+  scale: 1.15;
+}
+.pnode.is-read:before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border: 1px solid #e9c98a66;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.edgeinfo {
+  padding: 11px 14px 12px;
+  border-color: #b0965f;
+  border-radius: 3px;
+  background: #1a262d;
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+.edgeinfo.node-tip small {
+  display: block;
+  margin-bottom: 3px;
+  color: #c4b18b;
+  font: 600 11.5px/1.3 var(--sans);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.edgeinfo.node-tip strong {
+  margin-bottom: 5px;
+  font: 500 16px/1.3 var(--serif);
+}
+
+/* Chinese text needs more leading than Latin at the same size. */
+:lang(zh) :is(.node-card p, .edgeinfo, .home-lead, .sky-controls .guide) {
+  line-height: 1.75;
+  letter-spacing: 0.02em;
+}
+
+@media (min-width: 1000px) and (min-height: 600px) {
+  .graph-scene #theory {
+    width: min(780px, calc(100% - 18px));
+  }
+}
+@media (max-width: 680px) {
+  .field-caption {
+    font-size: 15.5px;
+    max-width: min(250px, 66vw);
+  }
+  .sky-controls .guide,
+  .sky-crumbs .trail,
+  .sky-crumbs .back-step {
+    font-size: 13px;
+  }
+  .graph-scene .node-card {
+    padding: 14px 16px 16px;
+  }
+  .graph-scene .node-card h2 {
+    font-size: 19px;
+  }
+  .graph-scene .node-card p {
+    font-size: 14.5px;
+  }
+  .card-tour .tour-next {
+    padding: 7px 12px;
+  }
+}
+@media (orientation: landscape) and (max-height: 540px) {
+  .field-caption {
+    font-size: 14.5px;
+    max-width: 230px;
+  }
+}
+@media (prefers-contrast: more) {
+  .sky-controls .guide,
+  .graph-scene .follow-papers span {
+    color: #eef0ea;
+  }
+}
+
+/* Words in the opening sentence lead to the fields they name. */
+.home-lead .lead-link {
+  color: #f3dfb2;
+  text-decoration: underline;
+  text-decoration-color: #b89a6280;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition:
+    color 0.15s,
+    text-decoration-color 0.15s;
+}
+.home-lead .lead-link:is(:hover, :focus-visible) {
+  color: var(--pale);
+  text-decoration-color: var(--pale);
+}
+.dnode .coin {
+  transition:
+    box-shadow 0.3s,
+    border-color 0.3s,
+    scale 0.25s ease;
+}
+.dnode.is-preview .coin {
+  border-color: var(--pale);
+  box-shadow:
+    0 0 0 4px #c1a57255,
+    0 0 26px #e7c07a66;
+  scale: 1.08;
+}
+.dnode.is-preview .node-label b {
+  color: var(--pale);
+}
+
+/* Explanations surface rather than pop. */
+.edgeinfo:not([hidden]) {
+  animation: tip-surface 190ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@keyframes tip-surface {
+  from {
+    opacity: 0;
+    translate: 0 4px;
   }
 }

@@ -48,7 +48,13 @@
               ...(released ? copy.paper : copy.topic),
             ].join(" "),
           );
-          return { id, title: paper.title[lang], released, terms };
+          return {
+            id,
+            title: paper.title[lang],
+            summary: paper.relation[lang],
+            released,
+            terms,
+          };
         });
       items.sort((a, b) => Number(b.released) - Number(a.released));
       return { field, items, released: items.some((item) => item.released) };
@@ -117,6 +123,9 @@
             element("span", "pi-kind", tr(item.released ? "paper" : "topic")),
             arrow,
           );
+          // A one-line summary for public papers; topics stay as their title.
+          if (item.released)
+            link.append(element("span", "pi-summary", item.summary));
           row.append(link);
           list.append(row);
         }
@@ -157,6 +166,37 @@
     search.addEventListener("input", () => {
       browse.query = search.value;
       drawResults();
+    });
+    // Enter opens the first match; the arrow keys walk the list.
+    index.addEventListener("keydown", (event) => {
+      const rows = [...listing.querySelectorAll("a.pi-link")];
+      if (!rows.length) return;
+      if (event.target === search && event.key === "Enter") {
+        event.preventDefault();
+        window.explorePaper?.(rows[0].dataset.paper);
+        return;
+      }
+      if (!["ArrowDown", "ArrowUp"].includes(event.key)) return;
+      const at = rows.indexOf(document.activeElement);
+      if (event.target === search) {
+        if (event.key !== "ArrowDown") return;
+        event.preventDefault();
+        rows[0].focus();
+        return;
+      }
+      if (at < 0) return;
+      event.preventDefault();
+      if (event.key === "ArrowUp" && at === 0) search.focus();
+      else
+        rows[
+          Math.max(
+            0,
+            Math.min(
+              rows.length - 1,
+              at + (event.key === "ArrowDown" ? 1 : -1),
+            ),
+          )
+        ].focus();
     });
     scope.addEventListener("change", () => {
       browse.scope = scope.value;

@@ -559,7 +559,7 @@
           y +
           ')" aria-label="' +
           disciplines[i].name[l] +
-          '"><rect class="fw-hit" x="-86" y="-33" width="172" height="75" rx="7"/><circle class="fw-halo" r="12"/><circle class="fw-dot" r="5.3"/><text class="fw-node-name" y="25">' +
+          '"><rect class="fw-hit" x="-86" y="-33" width="172" height="75" rx="7"/><circle class="fw-halo" r="12"/><circle class="fw-dot" r="5.3"/><text class="fw-node-name" y="31">' +
           disciplines[i].name[l] +
           "</text></g>",
       )

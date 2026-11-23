@@ -132,3 +132,34 @@
     grid-row: 1;
   }
 }
+
+/* Each public paper carries a one-line summary under its title. */
+.pi-link {
+  grid-template-rows: auto auto;
+  border-radius: 3px;
+  margin-inline: -0.5rem;
+  padding-inline: 0.5rem;
+  transition: background-color 0.15s;
+}
+.pi-link:is(:hover, :focus-visible) {
+  background: #d5b47612;
+}
+.pi-summary {
+  grid-column: 1 / -1;
+  max-width: 62ch;
+  color: #c6ccc5;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+:lang(zh) .pi-summary {
+  line-height: 1.7;
+}
+.pi-kind {
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .pi-summary {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+}
