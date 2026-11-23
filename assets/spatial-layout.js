@@ -55,34 +55,57 @@
     };
   }
 
-  function frame(
-    nodes,
-    anchor,
-    desired,
-    width,
-    height,
-    padX,
-    top,
-    bottom,
-    maxScale,
-  ) {
+  function usableArea(width, height, viewportInsets, homeInsets) {
+    const inset = (edge) =>
+      Math.max(
+        ...[viewportInsets, homeInsets].map((source) => {
+          const value = Number(source?.[edge]);
+          return Number.isFinite(value) ? Math.max(0, value) : 0;
+        }),
+      );
+    function axis(size, before, after) {
+      // During a toolbar reflow or the first hidden layout the two measured
+      // overlays can briefly occupy more than the stage itself.
+      const floor = Math.min(size, Math.max(1, Math.min(32, size * 0.1)));
+      const ratio = Math.min(1, (size - floor) / Math.max(1, before + after));
+      return [before * ratio, size - after * ratio];
+    }
+    const [left, right] = axis(width, inset("left"), inset("right"));
+    const [top, bottom] = axis(height, inset("top"), inset("bottom"));
+    return {
+      left,
+      right,
+      top,
+      bottom,
+      width: right - left,
+      height: bottom - top,
+    };
+  }
+
+  function frame(nodes, anchor, desired, area, padding, maxScale) {
     const b = bounds(nodes);
+    const left = area.left + padding.x,
+      right = area.right - padding.x;
+    const top = area.top + padding.top,
+      bottom = area.bottom - padding.bottom;
     const scale = Math.min(
       maxScale,
-      (width - 2 * padX) / Math.max(1, b.right - b.left),
-      (height - top - bottom) / Math.max(1, b.bottom - b.top),
+      (right - left) / Math.max(1, b.right - b.left),
+      (bottom - top) / Math.max(1, b.bottom - b.top),
     );
-    const x = clamp(
-      desired.x - scale * anchor.x,
-      padX - b.left * scale,
-      width - padX - b.right * scale,
-    );
-    const y = clamp(
-      desired.y - scale * anchor.y,
-      top - b.top * scale,
-      height - bottom - b.bottom * scale,
-    );
-    return { x, y, scale };
+    return {
+      scale,
+      x: clamp(
+        desired.x - scale * anchor.x,
+        left - b.left * scale,
+        right - b.right * scale,
+      ),
+      y: clamp(
+        desired.y - scale * anchor.y,
+        top - b.top * scale,
+        bottom - b.bottom * scale,
+      ),
+    };
   }
 
   function layout({
@@ -96,6 +119,8 @@
     focus = {},
     cardHeight = 0,
     theoryOpen = false,
+    viewportInsets,
+    homeInsets,
   }) {
     const w = Math.max(1, Number(width) || 1),
       h = Math.max(1, Number(height) || 1);
@@ -116,6 +141,12 @@
             ? theoryKey(concept)
             : "core";
     const atHome = focus.kind === "home" || !focus.kind;
+    const safeRect = usableArea(
+      w,
+      h,
+      viewportInsets,
+      atHome ? homeInsets : null,
+    );
     const reading =
       focusKey.startsWith("paper-") || focusKey.startsWith("theory-");
     const theoryVisible =
@@ -137,21 +168,62 @@
       }
     }
     if (theoryVisible) for (const key of theoryKeys) visible.add(key);
-    const peek =
-      atHome && w >= 660
-        ? publicPreview.filter((id) => parents.has(id)).map(paperKey)
-        : [];
+    const roomyPortrait =
+      phone &&
+      w >= 360 &&
+      h > w &&
+      safeRect.width >= 320 &&
+      safeRect.height >= 425;
+    const roomyDesktop =
+      !phone && w >= 660 && safeRect.width >= 510 && safeRect.height >= 390;
+    // On a tall phone, the two papers on Athena's branch occupy the free
+    // vertical space. The translation preview would cost a column of width.
+    const previewCount = roomyPortrait ? 2 : roomyDesktop ? 3 : 0;
+    const peek = atHome
+      ? publicPreview
+          .slice(0, previewCount)
+          .filter((id) => parents.has(id))
+          .map(paperKey)
+      : [];
     for (const key of peek) visible.add(key);
 
     const anchor = world[focusKey];
-    const centerX = w / 2;
-    const padX = Math.min(w * 0.17, phone ? 60 : 92);
-    const top = Math.min(h * 0.13, phone ? 48 : 53);
-    const bottom = Math.min(h * 0.19, phone ? 76 : 82);
+    const aw = safeRect.width,
+      ah = safeRect.height;
+    const centerX = safeRect.left + aw / 2,
+      centerY = safeRect.top + ah / 2;
+    const padding = {
+      x: Math.min(aw * 0.165, phone ? 60 : 108),
+      top: Math.min(ah * 0.13, phone ? 44 : 57),
+      bottom: Math.min(ah * 0.19, phone ? 73 : 101),
+    };
+    // A wide atlas with a floating title has room to move slightly right.
+    // When the title already reserves the left edge, center in the remainder.
+    const homeBias = !phone && w >= 900 && safeRect.left < w * 0.18 ? 0.055 : 0;
+    const homeCenter = {
+      x: centerX + aw * homeBias,
+      y: safeRect.top + ah * (peek.length ? 0.56 : 0.48),
+    };
+    const openCenter = { x: centerX, y: safeRect.top + ah * 0.47 };
+    const overviewZoom = phone ? 0.86 : 2.35;
     let camera;
     if (reading) {
-      const scale = phone ? 1.06 : Math.min(1.68, 1.22 + w * 0.00039);
-      const focusY = h * (cardHeight > h * 0.55 ? 0.17 : 0.21);
+      const scale = phone ? 1.06 : Math.min(1.68, 1.22 + aw * 0.00039);
+      const gap = Math.min(ah * 0.14, phone ? 61 : 65);
+      const preferredY = ah * (cardHeight > ah * 0.55 ? 0.17 : 0.21);
+      const topRoom = Math.min(32, ah * 0.15);
+      const requestedRoom = Number.isFinite(cardHeight)
+        ? Math.max(0, cardHeight)
+        : 0;
+      const focusY =
+        safeRect.top +
+        Math.max(
+          topRoom,
+          Math.min(
+            preferredY,
+            ah - requestedRoom - gap - Math.min(12, ah * 0.04),
+          ),
+        );
       camera = {
         scale,
         x: centerX - anchor.x * scale,
@@ -168,47 +240,49 @@
         anchor.x - extent.left,
         extent.right - anchor.x,
       );
-      // Wide one-sided fans otherwise push their parent to the phone's edge.
-      const branchZoom = phone
-        ? Math.min(1.12, (w * 0.68 - padX) / reach)
-        : 1.66;
-      camera = frame(
-        family,
-        anchor,
-        { x: centerX, y: h * 0.47 },
-        w,
-        h,
-        padX,
-        top,
-        bottom,
-        branchZoom,
+      // Keep the parent central even on a screen with an open side rail.
+      const branchZoom = Math.min(
+        phone ? 1.12 : 1.85,
+        (aw * 0.68 - padding.x) / reach,
       );
+      camera = frame(family, anchor, openCenter, safeRect, padding, branchZoom);
     } else if (theoryVisible && !atHome) {
       camera = frame(
         [centre, ...theoryKeys.map((k) => world[k])],
         centre,
-        { x: centerX, y: h * 0.47 },
-        w,
-        h,
-        padX,
-        top,
-        bottom,
-        phone ? 1.12 : 1.63,
+        openCenter,
+        safeRect,
+        padding,
+        phone ? 1.2 : 1.83,
       );
     } else {
       const overview = ["core", ...fieldKeys, ...peek].map((k) => world[k]);
       camera = frame(
         overview,
         centre,
-        { x: centerX, y: h * (peek.length ? 0.56 : 0.47) },
-        w,
-        h,
-        padX,
-        top,
-        bottom,
-        phone ? 0.68 : 0.85,
+        homeCenter,
+        safeRect,
+        padding,
+        overviewZoom,
       );
     }
+    const disclosed = [...visible].map((k) => world[k]);
+    const extent = bounds(disclosed);
+    const midpoint = {
+      x: (extent.left + extent.right) / 2,
+      y: (extent.top + extent.bottom) / 2,
+    };
+    const fitCamera = frame(
+      disclosed,
+      midpoint,
+      {
+        x: atHome ? homeCenter.x : centerX,
+        y: centerY - (padding.bottom - padding.top) / 2,
+      },
+      safeRect,
+      padding,
+      overviewZoom,
+    );
     const points = {};
     for (const key of visible) {
       const p = world[key];
@@ -218,18 +292,36 @@
       };
     }
     const focusPoint = points[focusKey];
-    const cardTop = focusPoint.y + (phone ? 61 : 65);
+    const cardTop = focusPoint.y + Math.min(ah * 0.14, phone ? 61 : 65);
     const paperSlot = reading
       ? {
           x: focusPoint.x,
           y: cardTop,
           top: cardTop,
           centerX: focusPoint.x,
-          width: Math.min(phone ? 410 : 535, w - (phone ? 24 : 40)),
-          availableHeight: Math.max(0, h - cardTop - 16),
+          width: Math.max(
+            1,
+            Math.min(
+              phone ? 410 : 535,
+              aw - Math.min(aw * 0.08, phone ? 24 : 40),
+            ),
+          ),
+          availableHeight: Math.max(
+            0,
+            safeRect.bottom - cardTop - Math.min(12, ah * 0.04),
+          ),
         }
       : null;
-    return { world, camera, points, focusKey, focusPoint, paperSlot };
+    return {
+      world,
+      camera,
+      fitCamera,
+      safeRect,
+      points,
+      focusKey,
+      focusPoint,
+      paperSlot,
+    };
   }
 
   window.constellationSpace = { layout };

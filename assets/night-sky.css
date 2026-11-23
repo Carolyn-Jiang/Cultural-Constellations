@@ -22,9 +22,12 @@ body {
   pointer-events: none;
 }
 .night-sky .sky-distant {
+  translate: calc(var(--sky-pan-x, 0px) * 0.35)
+    calc(var(--sky-pan-y, 0px) * 0.35);
   animation: sky-distant-drift 64s ease-in-out infinite alternate;
 }
 .night-sky .sky-near {
+  translate: var(--sky-pan-x, 0px) var(--sky-pan-y, 0px);
   animation: sky-near-drift 46s ease-in-out infinite alternate;
 }
 @keyframes sky-distant-drift {
@@ -50,6 +53,7 @@ body {
   .night-sky .sky-distant,
   .night-sky .sky-near {
     animation: none;
+    translate: none;
   }
 }
 @media (forced-colors: active), print {

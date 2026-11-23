@@ -75,8 +75,8 @@
     changeField: ["切换领域", "Change field"],
     back: ["上一步", "Back"],
     lead: [
-      "模型从藏品照片中认出了什么？一件物品变成文字，再由文字重建时，什么被留下？沿三篇研究，追踪文化线索如何改变。",
-      "What can a model recognise in a museum photograph? What survives when an object becomes a description and then an image again? Follow three studies through these changes in meaning.",
+      "从一件藏品、一幅墨迹或一段旋律出发，追踪文化意义如何改变。",
+      "Begin with a museum object, a brushstroke or a melody, and trace how its meaning changes.",
     ],
     start: ["开始论文导览", "Start the paper trail"],
     published: ["公开论文", "Public papers"],
@@ -141,6 +141,12 @@
   };
   const $ = (q) => document.querySelector(q);
   const stage = $("#graph-scene"),
+    mast = $("#mast"),
+    atlas = $("#atlas"),
+    header = $(".head"),
+    toolbar = $(".sky-controls"),
+    tourBar = $("#guided-route"),
+    sky = $(".night-sky"),
     map = $("#map"),
     layer = $("#nodes"),
     card = $("#node-card"),
@@ -186,6 +192,10 @@
     pinned = null,
     layoutResult = null,
     lastURL = location.href;
+  let introDismissed = false;
+  let insets = { left: 0, right: 0, top: 0, bottom: 0 };
+  let homeInsets = {};
+  const viewportInsets = () => insets;
   let noteSize = { w: 0, h: 0 },
     visibleKeys = new Set(),
     currentFocus = "core",
@@ -234,8 +244,9 @@
           active,
           showNote,
           indexOpen,
+          introDismissed,
           camera: camera ? { ...camera } : null,
-          size: surfaceSize,
+          size: stage.clientWidth + "x" + stage.clientHeight,
         },
       },
       "",
@@ -251,6 +262,7 @@
     if (a.kind === "theory" || a.kind === "concept") theoryOpen = true;
   }
   function navigate(hash) {
+    if (hash === "#atlas") introDismissed = false;
     if (location.hash === hash) {
       if (hash === "#papers") {
         closeIndex();
@@ -272,14 +284,6 @@
     update(!indexOpen);
     if (indexOpen)
       drawer.querySelector("input")?.focus({ preventScroll: true });
-    else if (
-      innerWidth <= 680 &&
-      stage.getBoundingClientRect().top > innerHeight * 0.68
-    )
-      stage.scrollIntoView({
-        block: "start",
-        behavior: reduced.matches ? "instant" : "smooth",
-      });
   }
   function closeIndex() {
     if (!indexOpen) return;
@@ -302,15 +306,22 @@
       read = new Set(saved.read);
       theoryOpen = saved.theoryOpen;
       active = saved.active;
+      introDismissed = !!saved.introDismissed;
       showNote = saved.showNote;
       indexOpen = saved.indexOpen;
     } else {
+      introDismissed = false;
       indexOpen = location.hash === "#papers";
       active = parse(location.hash);
       materialise(active);
       showNote = ["paper", "concept"].includes(active.kind);
     }
-    update(true, saved?.size === surfaceSize ? saved.camera : null);
+    update(
+      true,
+      saved?.size === stage.clientWidth + "x" + stage.clientHeight
+        ? saved.camera
+        : null,
+    );
   }
   window.explorePaper = (id) => {
     if (owner[id]) navigate("#paper/" + id);
@@ -387,14 +398,14 @@
       '</p><div class="start-row">' +
       route("#guide/pothen", t("start"), "primary-action") +
       "</div>";
-    $("#home-paths").innerHTML =
-      "<span>" +
-      esc(t("concepts")) +
-      "</span>" +
-      concepts.map((v) => route("#theory/" + v, t(v))).join("");
     $("#zoom-in").setAttribute("aria-label", lang ? "Zoom in" : "放大");
     $("#zoom-out").setAttribute("aria-label", lang ? "Zoom out" : "缩小");
     $("#view-all").textContent = lang ? "Fit network" : "全景";
+    tourBar.setAttribute("aria-label", t("tourName"));
+    $("#trail").setAttribute(
+      "aria-label",
+      lang ? "Exploration path" : "探索路径",
+    );
     $("#back-step").textContent = "‹ " + t("back");
     $("#back-step").setAttribute("aria-label", t("back"));
     drawer.querySelector("h2").textContent = t("papersNav");
@@ -509,8 +520,8 @@
     $("#graph-guide").textContent =
       active.kind === "home"
         ? lang
-          ? "Select an emblem to branch out. Drag to explore."
-          : "点选徽记延展分支，拖动画布探索。"
+          ? "Choose an emblem to explore. Drag to move • Scroll or pinch to zoom."
+          : "点选徽记展开，拖动漫游，滚轮或双指缩放。"
         : active.kind === "field"
           ? l(question[active.id])
           : active.kind === "theory"
@@ -728,45 +739,98 @@
   function project(w, cam = camera) {
     return { x: w.x * cam.scale + cam.x, y: w.y * cam.scale + cam.y };
   }
+  function readingBounds(w, h) {
+    const cut = viewportInsets();
+    const margin = 7;
+    const left = clamp(cut.left + margin, 0, w - 1);
+    const top = clamp(cut.top + margin, 0, h - 1);
+    return {
+      left,
+      top,
+      right: Math.max(left + 1, w - cut.right - margin),
+      bottom: Math.max(top + 1, h - cut.bottom - margin),
+    };
+  }
+  function overlaps(a, b, gap = 0) {
+    return (
+      a.left < b.right + gap &&
+      a.right > b.left - gap &&
+      a.top < b.bottom + gap &&
+      a.bottom > b.top - gap
+    );
+  }
   function displayNote() {
-    const el = !card.hidden ? card : !theory.hidden ? theory : null,
-      line = $("#callout-line");
+    const el = !card.hidden ? card : !theory.hidden ? theory : null;
+    const line = $("#callout-line");
     if (!el || !world[currentFocus]) {
       line.setAttribute("hidden", "");
       return;
     }
-    const p = project(world[currentFocus]),
-      w = stage.clientWidth,
+    const p = project(world[currentFocus]);
+    const w = stage.clientWidth,
       h = stage.clientHeight;
     if (p.x < -9 || p.x > w + 9 || p.y < -12 || p.y > h) {
       el.style.visibility = "hidden";
       line.setAttribute("hidden", "");
       return;
     }
-    el.style.visibility = "";
-    const gap = el === theory ? 46 : 43;
-    const x = clamp(p.x - noteSize.w / 2, 6, Math.max(6, w - noteSize.w - 6));
-    const below = p.y + gap,
-      above = p.y - noteSize.h - gap;
-    const y =
-      below + noteSize.h > h && above >= 6
-        ? above
-        : Math.max(5, Math.min(below, h - noteSize.h - 5));
+    const room = readingBounds(w, h);
+    const usableWidth = room.right - room.left,
+      usableHeight = room.bottom - room.top;
+    const topic = el === card && el.classList.contains("topic");
+    el.style.maxWidth =
+      Math.floor(topic ? Math.min(300, usableWidth) : usableWidth) + "px";
+    const width = el.offsetWidth;
+    const gap = el === theory ? 42 : 40;
+    const baseHeight = Math.min(
+      usableHeight,
+      el === theory ? Math.min(540, h * 0.71) : h * 0.67,
+    );
+    const naturalHeight = Math.min(
+      baseHeight,
+      el.scrollHeight + el.offsetHeight - el.clientHeight,
+    );
+    const below = room.bottom - p.y - gap,
+      above = p.y - gap - room.top;
+    const right = room.right - p.x - gap,
+      left = p.x - gap - room.left;
+    let side = "bottom",
+      limit = baseHeight;
+    if (below < naturalHeight) {
+      if (above >= naturalHeight) side = "top";
+      else if (Math.max(right, left) >= width)
+        side = right >= left ? "right" : "left";
+      else side = below >= above ? "bottom" : "top";
+    }
+    // Reserve a usable scroll viewport on a small phone even with the anchor near mid-screen.
+    if (side === "top" || side === "bottom") {
+      const slot = side === "top" ? above : below;
+      const minimum = Math.min(usableHeight, el === theory ? 230 : 170);
+      limit = Math.min(baseHeight, Math.max(minimum, slot));
+    }
+    el.style.maxHeight = Math.max(1, Math.floor(limit)) + "px";
+    const height = el.offsetHeight;
+    let x = p.x - width / 2;
+    let y = side === "top" ? p.y - gap - height : p.y + gap;
+    if (side === "left" || side === "right") {
+      x = side === "left" ? p.x - gap - width : p.x + gap;
+      y = p.y - height / 2;
+    }
+    x = clamp(x, room.left, Math.max(room.left, room.right - width));
+    y = clamp(y, room.top, Math.max(room.top, room.bottom - height));
     el.style.left = x + "px";
     el.style.top = y + "px";
-    line.removeAttribute("hidden");
-    line.setAttribute(
-      "d",
-      "M" +
-        p.x +
-        " " +
-        p.y +
-        "L" +
-        clamp(p.x, x + 4, x + noteSize.w - 4) +
-        " " +
-        (y > p.y ? y : y + noteSize.h),
-    );
-    return { left: x, right: x + noteSize.w, top: y, bottom: y + noteSize.h };
+    el.style.visibility = "";
+    const rect = { left: x, right: x + width, top: y, bottom: y + height };
+    const lineX = clamp(p.x, rect.left, rect.right),
+      lineY = clamp(p.y, rect.top, rect.bottom);
+    if (Math.hypot(lineX - p.x, lineY - p.y) < 2)
+      line.setAttribute("hidden", "");
+    else {
+      line.removeAttribute("hidden");
+      line.setAttribute("d", "M" + p.x + " " + p.y + "L" + lineX + " " + lineY);
+    }
+    return rect;
   }
   function syncPortals() {
     const nav = $("#portals");
@@ -786,8 +850,10 @@
     }
   }
   function positionPortals(screen, w, h, note) {
-    const anchor = screen[currentFocus];
-    if (!anchor) return;
+    const portals = $("#portals").children,
+      anchor = screen[currentFocus];
+    if (!portals.length || !anchor) return;
+    const room = readingBounds(w, h);
     const occupied = [
       {
         left: anchor.x - 56,
@@ -797,74 +863,86 @@
       },
     ];
     if (note) occupied.push(note);
-    for (const portal of $("#portals").children) {
+    for (const portal of portals) {
       const target = screen[paperKey(portal.dataset.jump)];
-      if (!target) {
-        portal.hidden = true;
-        continue;
-      }
-      const px = Math.min(78, w * 0.17),
-        py = 26;
+      const inRoom =
+        target &&
+        target.x >= room.left + 14 &&
+        target.x <= room.right - 14 &&
+        target.y >= room.top + 12 &&
+        target.y <= room.bottom - 20;
+      const nodeRect = target && {
+        left: target.x - 14,
+        right: target.x + 14,
+        top: target.y - 11,
+        bottom: target.y + 15,
+      };
       if (
-        (target.x >= px &&
-          target.x <= w - px &&
-          target.y >= py &&
-          target.y <= h - 45) ||
+        !target ||
+        (inRoom && !(note && overlaps(nodeRect, note))) ||
         anchor.x < 0 ||
-        anchor.y < 0 ||
         anchor.x > w ||
+        anchor.y < 0 ||
         anchor.y > h
       ) {
         portal.hidden = true;
         continue;
       }
-      const dx = target.x - anchor.x,
-        dy = target.y - anchor.y;
-      const fx =
-        dx > 0
-          ? (w - px - anchor.x) / dx
-          : dx < 0
-            ? (px - anchor.x) / dx
-            : Infinity;
-      const fy =
-        dy > 0
-          ? (h - 37 - anchor.y) / dy
-          : dy < 0
-            ? (py - anchor.y) / dy
-            : Infinity;
-      const u = clamp(Math.min(fx, fy), 0, 1);
-      const ideal = {
-        x: clamp(anchor.x + dx * u, px, w - px),
-        y: clamp(anchor.y + dy * u, py, h - 37),
-      };
-      const options = [ideal];
-      for (let y = py; y <= h - 35; y += 38)
-        options.push({ x: px, y }, { x: w - px, y });
-      for (let x = px; x <= w - px; x += 80)
-        options.push({ x, y: py }, { x, y: h - 35 });
-      const distance = (p) => Math.hypot(p.x - ideal.x, p.y - ideal.y);
-      options.sort((a, b) => distance(a) - distance(b));
-      const halfWidth = Math.min(68, px);
+      portal.hidden = false;
+      portal.style.width = "max-content";
+      portal.style.maxWidth =
+        Math.min(128, Math.floor(room.right - room.left)) + "px";
+      const hw = portal.offsetWidth / 2,
+        hh = portal.offsetHeight / 2;
+      const xmin = room.left + hw,
+        xmax = room.right - hw;
+      const ymin = room.top + hh,
+        ymax = room.bottom - hh;
+      if (xmax < xmin || ymax < ymin) {
+        portal.hidden = true;
+        continue;
+      }
+      const ax = clamp(anchor.x, xmin, xmax),
+        ay = clamp(anchor.y, ymin, ymax);
+      const dx = target.x - ax,
+        dy = target.y - ay;
+      const tx =
+        dx > 0 ? (xmax - ax) / dx : dx < 0 ? (xmin - ax) / dx : Infinity;
+      const ty =
+        dy > 0 ? (ymax - ay) / dy : dy < 0 ? (ymin - ay) / dy : Infinity;
+      const factor = Math.min(tx, ty);
+      const ideal = Number.isFinite(factor)
+        ? {
+            x: clamp(ax + dx * factor, xmin, xmax),
+            y: clamp(ay + dy * factor, ymin, ymax),
+          }
+        : { x: xmax, y: ay };
+      const options = [
+        ideal,
+        { x: xmin, y: ymax },
+        { x: xmax, y: ymax },
+        { x: xmax, y: ymin },
+      ];
+      for (let y = ymin; y <= ymax; y += Math.max(12, hh))
+        options.push({ x: xmin, y }, { x: xmax, y });
+      for (let x = xmin; x <= xmax; x += Math.max(22, hw))
+        options.push({ x, y: ymin }, { x, y: ymax });
+      const d = (p) => Math.hypot(p.x - ideal.x, p.y - ideal.y);
+      options.sort((a, b) => d(a) - d(b));
+      const rect = (p) => ({
+        left: p.x - hw,
+        right: p.x + hw,
+        top: p.y - hh,
+        bottom: p.y + hh,
+      });
       const pos = options.find((p) =>
-        occupied.every(
-          (r) =>
-            p.x + halfWidth < r.left ||
-            p.x - halfWidth > r.right ||
-            p.y + 23 < r.top ||
-            p.y - 23 > r.bottom,
-        ),
+        occupied.every((r) => !overlaps(rect(p), r, 5)),
       );
       if (!pos) {
         portal.hidden = true;
         continue;
       }
-      occupied.push({
-        left: pos.x - halfWidth,
-        right: pos.x + halfWidth,
-        top: pos.y - 18,
-        bottom: pos.y + 18,
-      });
-      portal.hidden = false;
+      occupied.push(rect(pos));
       portal.style.left = pos.x + "px";
       portal.style.top = pos.y + "px";
       portal.style.setProperty(
@@ -877,6 +955,11 @@
     const w = stage.clientWidth,
       h = stage.clientHeight,
       screen = {};
+    if (sky && !reduced.matches) {
+      const shift = (value) => (14 * Math.tanh(value / 460)).toFixed(2) + "px";
+      sky.style.setProperty("--sky-pan-x", shift(camera.x - w / 2));
+      sky.style.setProperty("--sky-pan-y", shift(camera.y - h / 2));
+    }
     stage.classList.toggle("distant", camera.scale < 0.5);
     for (const [k, p] of Object.entries(world)) {
       const v = project(p);
@@ -940,34 +1023,113 @@
   }
   function showTip(e, pin = false) {
     clearTip();
-    if (!e) return;
+    if (!e || !world[e.a] || !world[e.b]) return;
     if (pin) pinned = e.id;
     e.group.classList.add("hot");
     e.group.setAttribute("aria-describedby", "tip");
     tip.innerHTML = "<strong>" + esc(e.title) + "</strong>" + esc(e.detail);
+    const room = readingBounds(stage.clientWidth, stage.clientHeight);
+    tip.style.maxWidth = Math.min(285, room.right - room.left) + "px";
+    tip.style.maxHeight = Math.floor(room.bottom - room.top) + "px";
+    tip.style.overflowY = "auto";
     tip.hidden = false;
+    const width = tip.offsetWidth,
+      height = tip.offsetHeight;
+    const scrollable = pin && tip.scrollHeight > tip.clientHeight + 1;
+    tip.style.pointerEvents = scrollable ? "auto" : "";
+    tip.style.touchAction = scrollable ? "pan-y" : "";
+    tip.tabIndex = scrollable ? 0 : -1;
+    tip.onpointerdown = tip.onwheel = scrollable
+      ? (event) => event.stopPropagation()
+      : null;
     const a = project(world[e.a]),
       b = project(world[e.b]);
-    const x = (a.x + b.x) / 2,
-      y = (a.y + b.y) / 2;
-    tip.style.left =
-      clamp(
-        x - tip.offsetWidth / 2,
-        6,
-        stage.clientWidth - tip.offsetWidth - 6,
-      ) + "px";
-    tip.style.top =
-      clamp(
-        y - tip.offsetHeight - 8,
-        5,
-        stage.clientHeight - tip.offsetHeight - 5,
-      ) + "px";
+    const mid = {
+      x: clamp((a.x + b.x) / 2, room.left, room.right),
+      y: clamp((a.y + b.y) / 2, room.top, room.bottom),
+    };
+    const note = !card.hidden ? card : !theory.hidden ? theory : null;
+    const avoid = [];
+    if (note && note.style.visibility !== "hidden") {
+      avoid.push({
+        left: note.offsetLeft,
+        right: note.offsetLeft + note.offsetWidth,
+        top: note.offsetTop,
+        bottom: note.offsetTop + note.offsetHeight,
+      });
+    }
+    const candidates = [
+      { x: mid.x - width / 2, y: mid.y - height - 10 },
+      { x: mid.x - width / 2, y: mid.y + 10 },
+      { x: mid.x + 12, y: mid.y - height / 2 },
+      { x: mid.x - width - 12, y: mid.y - height / 2 },
+    ];
+    if (avoid.length) {
+      const r = avoid[0];
+      candidates.push(
+        { x: mid.x - width / 2, y: r.top - height - 6 },
+        { x: mid.x - width / 2, y: r.bottom + 6 },
+        { x: r.left - width - 6, y: mid.y - height / 2 },
+        { x: r.right + 6, y: mid.y - height / 2 },
+      );
+    }
+    const fits = candidates.map((p) => {
+      const x = clamp(p.x, room.left, Math.max(room.left, room.right - width));
+      const y = clamp(p.y, room.top, Math.max(room.top, room.bottom - height));
+      return { left: x, right: x + width, top: y, bottom: y + height };
+    });
+    const pos =
+      fits.find((r) => avoid.every((n) => !overlaps(r, n, 3))) || fits[0];
+    tip.style.left = pos.left + "px";
+    tip.style.top = pos.top + "px";
   }
   function noteMetrics() {
     const node = !card.hidden ? card : !theory.hidden ? theory : null;
     noteSize = node
       ? { w: node.offsetWidth, h: node.offsetHeight }
       : { w: 0, h: 0 };
+  }
+  function measureViewport() {
+    const w = stage.clientWidth,
+      h = stage.clientHeight;
+    const headRect = header.getBoundingClientRect();
+    const footRect = toolbar.getBoundingClientRect();
+    const tourBottom = tourBar.hidden
+      ? 0
+      : tourBar.getBoundingClientRect().bottom;
+    insets = {
+      left: Math.min(16, headRect.left),
+      right: Math.min(16, w - headRect.right),
+      top: Math.ceil(Math.max(headRect.bottom, tourBottom) + 8),
+      bottom: Math.ceil(h - footRect.top + 8),
+    };
+    const stacked = w <= 680 && h > w * 0.9;
+    homeInsets = mast.inert
+      ? {}
+      : stacked
+        ? { top: mast.offsetTop + mast.offsetHeight + 5 }
+        : { left: Math.round(mast.offsetLeft + mast.offsetWidth * 0.77) };
+    atlas.style.setProperty("--map-safe-top", insets.top + "px");
+    atlas.style.setProperty("--map-safe-bottom", insets.bottom + "px");
+    surfaceSize = [
+      w,
+      h,
+      insets.top,
+      insets.bottom,
+      homeInsets.top || 0,
+      homeInsets.left || 0,
+    ].join("/");
+  }
+  function syncIntro() {
+    const visible = active.kind === "home" && !indexOpen && !introDismissed;
+    mast.inert = !visible;
+    atlas.classList.toggle("has-intro", visible);
+  }
+  function dismissIntro() {
+    if (mast.inert) return;
+    introDismissed = true;
+    syncIntro();
+    measureViewport();
   }
   function compute() {
     const peers = new Set(read);
@@ -976,6 +1138,8 @@
       width: stage.clientWidth,
       height: stage.clientHeight,
       mobile: innerWidth <= 680,
+      viewportInsets: viewportInsets(),
+      homeInsets,
       fields,
       groups,
       peers,
@@ -992,7 +1156,10 @@
     currentFocus = focusKey(active);
     visibleKeys = new Set(Object.keys(result.points));
     const fromCam = camera ? { ...camera } : { ...result.camera },
-      toCam = savedCamera || (holdCamera && camera ? camera : result.camera);
+      toCam =
+        savedCamera === "fit"
+          ? result.fitCamera
+          : savedCamera || (holdCamera && camera ? camera : result.camera);
     const previous = world,
       starts = {},
       ends = {},
@@ -1091,13 +1258,20 @@
     clearTip();
     for (const g of ghostLinks) g.remove();
     ghostLinks.clear();
+    atlas.dataset.focus = active.kind;
+    atlas.classList.toggle("index-open", indexOpen);
+    syncIntro();
     buildControls();
     renderNotes();
+    measureViewport();
     noteMetrics();
     syncPortals();
-    $("#atlas").dataset.focus = active.kind;
-    $("#atlas").classList.toggle("reading", !!showNote && !indexOpen);
-    transition(animate, savedCam, indexOpen || (!animate && !!camera));
+    atlas.classList.toggle("reading", !!showNote && !indexOpen);
+    transition(
+      animate,
+      savedCam,
+      indexOpen || (!animate && !!camera && mast.inert),
+    );
     const shown = !drawer.hidden
       ? drawer
       : !card.hidden
@@ -1132,6 +1306,7 @@
   }
   function zoom(factor, at, smooth = false) {
     if (!camera) return;
+    dismissIntro();
     stopTravel();
     const old = camera.scale,
       scale = clamp(old * factor, 0.23, 2.4),
@@ -1149,14 +1324,11 @@
   }
   function fit() {
     if (!layoutResult) return;
-    if (!groups.size && !read.size && !theoryOpen) {
-      transition(true);
-      return;
-    }
     remember();
     showNote = false;
     indexOpen = false;
     active = { kind: "home" };
+    introDismissed = !!(groups.size || read.size || theoryOpen);
     if (location.hash !== "#atlas") {
       history.pushState(
         { depth: (history.state?.depth || 0) + 1 },
@@ -1165,25 +1337,7 @@
       );
       lastURL = location.href;
     }
-    const pts = [...visibleKeys].map((k) => layoutResult.world[k]);
-    const xs = pts.map((p) => p.x),
-      ys = pts.map((p) => p.y),
-      w = stage.clientWidth,
-      h = stage.clientHeight;
-    const loX = Math.min(...xs),
-      hiX = Math.max(...xs),
-      loY = Math.min(...ys),
-      hiY = Math.max(...ys);
-    const scale = clamp(
-      Math.min((w - 120) / (hiX - loX || 1), (h - 120) / (hiY - loY || 1)),
-      0.23,
-      1.3,
-    );
-    update(true, {
-      scale,
-      x: w / 2 - (scale * (loX + hiX)) / 2,
-      y: h * 0.46 - (scale * (loY + hiY)) / 2,
-    });
+    update(true, introDismissed ? "fit" : null);
   }
   function setLanguage(n) {
     if (n === lang) return;
@@ -1296,24 +1450,35 @@
       mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 },
     };
   }
-  stage.addEventListener("pointerdown", (e) => {
-    if (
-      e.button !== 0 ||
-      e.target.closest("button,a,.edge,#node-card,#theory,#index-drawer")
-    )
-      return;
+  let dragging = false,
+    ignoreClick = false;
+  const readingSurface = "#node-card,#theory,#index-drawer,#tip";
+  function beginDrag() {
+    if (dragging) return;
+    dragging = true;
+    ignoreClick = true;
     stopTravel();
-    const p = local(e);
-    pointers.set(e.pointerId, p);
-    stage.setPointerCapture(e.pointerId);
-    drag = p;
-    pinch = pointers.size === 2 ? pinchState() : null;
+    dismissIntro();
+    for (const id of pointers.keys()) stage.setPointerCapture(id);
     stage.classList.add("dragging");
     stage.focus({ preventScroll: true });
+  }
+  stage.addEventListener("pointerdown", (e) => {
+    if (!pointers.size) ignoreClick = false;
+    if (e.button !== 0 || e.target.closest(readingSurface)) return;
+    const p = local(e);
+    pointers.set(e.pointerId, p);
+    drag = p;
+    pinch = pointers.size === 2 ? pinchState() : null;
+    if (pinch) beginDrag();
+    else if (!e.target.closest("button,a,.edge"))
+      stage.setPointerCapture(e.pointerId);
   });
   stage.addEventListener("pointermove", (e) => {
     if (!pointers.has(e.pointerId)) return;
     const p = local(e);
+    if (!dragging && Math.hypot(p.x - drag.x, p.y - drag.y) < 5) return;
+    beginDrag();
     pointers.set(e.pointerId, p);
     if (pointers.size === 2 && pinch) {
       const next = pinchState();
@@ -1329,12 +1494,16 @@
     paint();
   });
   function release(e) {
+    if (!pointers.has(e.pointerId)) return;
     pointers.delete(e.pointerId);
     pinch = null;
     drag = [...pointers.values()][0] || null;
     if (!drag) {
+      const wasDragging = dragging;
+      dragging = false;
       stage.classList.remove("dragging");
       if (
+        wasDragging &&
         [...visibleKeys].some(
           (k) =>
             Math.abs((world[k]?.x ?? 0) - layoutResult.world[k].x) > 1 ||
@@ -1346,16 +1515,33 @@
   }
   stage.addEventListener("pointerup", release);
   stage.addEventListener("pointercancel", release);
+  stage.addEventListener("pointerout", (e) => {
+    if (
+      !dragging &&
+      pointers.has(e.pointerId) &&
+      !stage.contains(e.relatedTarget)
+    )
+      release(e);
+  });
+  stage.addEventListener(
+    "click",
+    (e) => {
+      if (!ignoreClick || !e.detail) return;
+      ignoreClick = false;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    },
+    true,
+  );
   stage.addEventListener(
     "wheel",
     (e) => {
-      if (
-        (!e.ctrlKey && !e.metaKey) ||
-        e.target.closest("#node-card,#theory,#index-drawer")
-      )
-        return;
+      if (e.target.closest(readingSurface)) return;
       e.preventDefault();
-      zoom(Math.exp(-e.deltaY * 0.01), local(e));
+      const unit =
+        e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? stage.clientHeight : 1;
+      const speed = e.ctrlKey || e.metaKey ? 0.01 : 0.002;
+      zoom(Math.exp(-clamp(e.deltaY * unit * speed, -0.7, 0.7)), local(e));
     },
     { passive: false },
   );
@@ -1370,6 +1556,7 @@
     if (directions[e.key]) {
       e.preventDefault();
       stopTravel();
+      dismissIntro();
       camera.x += directions[e.key][0];
       camera.y += directions[e.key][1];
       paint();
@@ -1393,18 +1580,20 @@
   window.addEventListener("pagehide", remember);
   window.addEventListener("popstate", restore);
   window.addEventListener("hashchange", restore);
-  new ResizeObserver(() => {
-    const size = stage.clientWidth + "x" + stage.clientHeight;
-    if (surfaceSize !== size) {
-      surfaceSize = size;
+  const viewportObserver = new ResizeObserver(() => {
+    const previous = surfaceSize;
+    measureViewport();
+    if (previous !== surfaceSize) {
       noteMetrics();
       transition(false);
     }
-  }).observe(stage);
+  });
+  for (const el of [stage, mast, header, toolbar, tourBar])
+    viewportObserver.observe(el);
   // A theory selection can change the height of its anchored reading without moving the camera.
   const noteObserver = new ResizeObserver(() => {
     noteMetrics();
-    if (camera) displayNote();
+    if (camera) paint();
   });
   noteObserver.observe(card);
   noteObserver.observe(theory);
@@ -1415,6 +1604,5 @@
   materialise(active);
   indexOpen = location.hash === "#papers";
   showNote = ["paper", "concept"].includes(active.kind);
-  surfaceSize = stage.clientWidth + "x" + stage.clientHeight;
   update(false);
 })();

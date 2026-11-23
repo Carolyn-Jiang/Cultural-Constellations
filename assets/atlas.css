@@ -1309,64 +1309,6 @@ html[lang="zh-Hans"] #atlas[data-screen="home"] h1 em {
   }
 }
 
-/* The introduction, network and camera controls stay mounted as the visitor moves. */
-#explore-surface {
-  display: grid;
-  grid-template-columns: minmax(255px, 0.69fr) minmax(0, 1.4fr);
-  gap: clamp(15px, 3vw, 52px);
-  align-items: center;
-  min-height: 76svh;
-}
-.intro-rail {
-  padding: 38px 0;
-  min-width: 0;
-}
-.intro-rail .mast {
-  display: block;
-  padding: 0;
-}
-.intro-rail h1 {
-  font-size: clamp(44px, 4.6vw, 81px);
-  line-height: 1.07;
-  letter-spacing: -0.04em;
-}
-.intro-rail h1 em {
-  color: #e8c78c;
-  font-weight: inherit;
-}
-html[lang="zh-Hans"] .intro-rail h1 {
-  line-height: 1.14;
-}
-html[lang="zh-Hans"] .intro-rail h1 em {
-  font-style: normal;
-}
-.intro-rail .home-paths {
-  margin: 24px 0 0;
-  gap: 3px 15px;
-  padding: 12px 0 0;
-}
-.intro-rail .home-paths > span {
-  width: 100%;
-  font-size: 13px;
-}
-.intro-rail .home-paths a {
-  font-size: 13px;
-}
-.map-shell {
-  min-width: 0;
-  width: 100%;
-  position: relative;
-}
-.canvas-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #d1c4a6;
-  min-height: 41px;
-}
-.canvas-bar .trail {
-  font-size: 12px;
-}
 .camera-tools {
   display: flex;
   gap: 2px;
@@ -1391,30 +1333,6 @@ html[lang="zh-Hans"] .intro-rail h1 em {
 }
 .camera-tools button:hover {
   border-color: var(--gold);
-}
-.graph-scene {
-  height: clamp(525px, 68svh, 700px);
-  border: 0;
-  border-block: 1px solid #b69e7030;
-  overflow: hidden;
-  isolation: isolate;
-  touch-action: none;
-  cursor: grab;
-  border-radius: 1px;
-}
-.graph-scene.dragging {
-  cursor: grabbing;
-}
-.graph-scene:focus-visible {
-  outline-offset: 2px;
-}
-.map-shell .graph-tools {
-  min-height: 30px;
-  padding: 4px 0 0;
-  color: #ccd1c9;
-}
-.map-shell .guide {
-  font-size: 13px;
 }
 .dnode,
 .pnode,
@@ -1570,123 +1488,6 @@ html[lang="zh-Hans"] .intro-rail h1 em {
   padding: 0;
   margin: 0;
 }
-.intro-rail .guided-route {
-  display: flex;
-  align-items: flex-start;
-  flex-direction: column;
-  padding: 12px 0;
-  row-gap: 12px;
-  margin-top: 8px;
-}
-.intro-rail .guided-route .tour-heading {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-}
-.intro-rail .tour-links {
-  gap: 0;
-  flex-wrap: wrap;
-}
-.intro-rail .tour-links i {
-  width: 12px;
-}
-@media (min-width: 1450px) {
-  #explore-surface {
-    gap: 50px;
-  }
-  .intro-rail {
-    padding-left: 2vw;
-  }
-}
-@media (max-width: 890px) {
-  #explore-surface {
-    grid-template-columns: minmax(200px, 0.59fr) minmax(0, 1.36fr);
-    gap: 14px;
-  }
-  .intro-rail h1 {
-    font-size: 42px;
-  }
-  .graph-scene {
-    height: 535px;
-  }
-  .intro-rail .home-lead {
-    font-size: 15px;
-  }
-  .dnode {
-    --coin: 60px;
-  }
-}
-@media (max-width: 680px) {
-  #explore-surface {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    gap: 4px;
-    align-items: stretch;
-  }
-  .intro-rail {
-    padding: 14px 0 0;
-  }
-  .intro-rail h1 {
-    font-size: clamp(31px, 7.2vw, 45px);
-    max-width: 19em;
-  }
-  .intro-rail h1 br {
-    display: none;
-  }
-  .intro-rail .home-lead {
-    font-size: 14px;
-    line-height: 1.45;
-    margin: 8px 0 9px;
-    max-width: 58ch;
-  }
-  .intro-rail .home-paths {
-    display: none;
-  }
-  .intro-rail .guided-route {
-    margin: 4px 0;
-    padding: 4px 0;
-    border: 0;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 4px 8px;
-  }
-  .intro-rail .tour-links {
-    grid-row: 2;
-  }
-  .intro-rail .tour-forward {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-  }
-  .canvas-bar {
-    min-height: 35px;
-  }
-  .canvas-bar .back-step {
-    padding: 3px 4px 3px 0;
-  }
-  .canvas-bar .trail {
-    gap: 3px;
-  }
-  .graph-scene {
-    height: clamp(467px, 66svh, 570px);
-  }
-  .map-shell .guide {
-    font-size: 12px;
-  }
-  .dnode {
-    --coin: clamp(44px, 12.4vw, 66px);
-  }
-  .pnode .node-label {
-    font-size: 13px;
-    max-width: 105px;
-  }
-  .graph-scene .node-card {
-    max-height: 67%;
-  }
-  .graph-scene #theory {
-    max-height: 71%;
-  }
-}
 .graph-scene.distant .coin {
   scale: 0.8;
 }
@@ -1767,4 +1568,356 @@ html[lang="zh-Hans"] .intro-rail h1 em {
 .jump-node:hover {
   border-color: #f6dfa2;
   background: #26333b;
+}
+
+/* The graph owns the viewport. Only the individual floating controls catch input. */
+html,
+body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+body {
+  --page-gutter: clamp(18px, 3.1vw, 66px);
+  --left-edge: max(var(--page-gutter), env(safe-area-inset-left));
+  --right-edge: max(var(--page-gutter), env(safe-area-inset-right));
+  --top-edge: max(8px, env(safe-area-inset-top));
+  --bottom-edge: max(clamp(13px, 2.8vh, 35px), env(safe-area-inset-bottom));
+}
+.sky-page,
+#graph-scene {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+.sky-page {
+  isolation: isolate;
+}
+#graph-scene {
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
+}
+#graph-scene.dragging {
+  cursor: grabbing;
+}
+#graph-scene:focus-visible {
+  outline-offset: -3px;
+}
+.head,
+.sky-intro,
+.sky-tour,
+.sky-controls {
+  position: fixed;
+  pointer-events: none;
+}
+.head {
+  top: var(--top-edge);
+  left: var(--left-edge);
+  right: var(--right-edge);
+  z-index: 12;
+  border: 0;
+}
+.head .headin {
+  width: 100%;
+  min-height: 49px;
+  margin: 0;
+}
+.head a,
+.head button,
+.sky-tour a,
+.sky-controls a,
+.sky-controls button,
+.sky-intro:not([inert]) a {
+  pointer-events: auto;
+}
+.head,
+.sky-controls,
+.sky-intro,
+.sky-tour {
+  text-shadow:
+    0 1px 8px #080e17,
+    0 2px 4px #080e17;
+}
+.sky-intro {
+  z-index: 4;
+  top: max(calc(var(--top-edge) + 76px), 13vh);
+  left: var(--left-edge);
+  width: clamp(230px, 27vw, 420px);
+  padding: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition:
+    opacity 260ms ease,
+    transform 320ms ease,
+    visibility 0s 320ms;
+}
+.sky-page.has-intro .sky-intro {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s;
+}
+.sky-intro h1 {
+  font: 500 clamp(33px, 3.6vw, 66px) / 1.06 var(--serif);
+  letter-spacing: -0.044em;
+  text-wrap: balance;
+}
+.sky-intro h1 em {
+  color: #ebca8d;
+  font-weight: inherit;
+}
+html[lang="zh-Hans"] .sky-intro h1 {
+  line-height: 1.15;
+}
+html[lang="zh-Hans"] .sky-intro h1 em {
+  font-style: normal;
+}
+.sky-intro .home-lead {
+  max-width: 32ch;
+  font-size: clamp(15px, 1.04vw, 18px);
+  line-height: 1.55;
+  margin: 14px 0 8px;
+}
+.sky-intro .primary-action,
+.sky-tour .next-stop {
+  min-height: 38px;
+  color: var(--pale);
+  background: transparent;
+  font-weight: 550;
+  font-size: 15px;
+  padding: 4px 0;
+  border-radius: 0;
+  text-decoration: underline;
+  text-decoration-color: #ad8f5c;
+  text-underline-offset: 6px;
+}
+.sky-intro .primary-action:after {
+  content: none;
+}
+.sky-tour {
+  z-index: 7;
+  top: calc(var(--top-edge) + 61px);
+  left: var(--left-edge);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  padding: 0;
+  max-width: calc(100% - var(--left-edge) - var(--right-edge));
+  margin: 0;
+  border: 0;
+  background: transparent;
+}
+.sky-tour .tour-heading {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.sky-tour .tour-links i {
+  width: 13px;
+}
+.sky-controls {
+  z-index: 7;
+  left: var(--left-edge);
+  right: var(--right-edge);
+  bottom: var(--bottom-edge);
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.sky-location {
+  min-width: 0;
+}
+.sky-crumbs {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sky-crumbs .trail {
+  font-size: 13px;
+}
+.sky-crumbs .back-step {
+  padding: 3px 9px 3px 0;
+}
+.sky-page[data-focus="home"]:not(.index-open) .sky-crumbs {
+  display: none;
+}
+.sky-controls .guide {
+  display: block;
+  color: #c4c6c0;
+  font-size: 14px;
+}
+.sky-controls .camera-tools {
+  gap: 3px;
+}
+.camera-tools button {
+  min-width: 39px;
+  min-height: 39px;
+  color: var(--cream);
+  background: #101c28dc;
+}
+#graph-scene #index-drawer {
+  top: var(--map-safe-top);
+  right: var(--right-edge);
+  max-height: calc(100% - var(--map-safe-top) - var(--map-safe-bottom));
+  max-width: calc(100% - var(--right-edge) - var(--left-edge));
+}
+.sky-page noscript {
+  position: fixed;
+  inset: 30% 10% auto;
+  z-index: 4;
+  text-align: center;
+}
+@media (max-width: 680px) {
+  body {
+    --page-gutter: 14px;
+  }
+  .head .headin {
+    min-height: 36px;
+  }
+  .sky-intro {
+    top: calc(var(--top-edge) + 50px);
+    width: calc(100% - var(--left-edge) - var(--right-edge));
+  }
+  .sky-intro h1 {
+    font-size: clamp(28px, 7.5vw, 41px);
+    max-width: 16em;
+  }
+  .sky-intro h1 br {
+    display: none;
+  }
+  .sky-intro .home-lead {
+    font-size: 14px;
+    margin: 6px 0 0;
+    max-width: 43ch;
+  }
+  .sky-intro .primary-action {
+    font-size: 14px;
+    min-height: 34px;
+  }
+  .sky-controls {
+    gap: 8px;
+    align-items: flex-end;
+  }
+  .sky-crumbs {
+    gap: 5px;
+  }
+  .sky-controls .guide,
+  .sky-crumbs .trail {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .sky-page:not([data-focus="home"]) .sky-controls .guide {
+    display: none;
+  }
+  .sky-controls .camera-tools {
+    gap: 2px;
+  }
+  .camera-tools button {
+    min-width: 36px;
+  }
+  .sky-tour {
+    top: calc(var(--top-edge) + 44px);
+    gap: 2px 12px;
+  }
+  .sky-tour .tour-heading {
+    width: 100%;
+  }
+  .sky-tour .tour-links {
+    justify-content: flex-start;
+  }
+  .sky-tour .tour-links i,
+  .sky-tour .route-no {
+    display: none;
+  }
+  .sky-tour .tour-links {
+    gap: 8px;
+  }
+  .sky-tour .tour-links a,
+  .sky-tour .next-stop {
+    font-size: 13px;
+  }
+  .sky-tour .next-stop {
+    min-height: 30px;
+  }
+}
+@media (max-height: 540px) {
+  .sky-intro {
+    top: calc(var(--top-edge) + 50px);
+  }
+  .sky-intro h1 {
+    font-size: clamp(24px, 3.4vw, 34px);
+  }
+  .sky-intro .home-lead {
+    display: none;
+  }
+  .head .headin {
+    min-height: 34px;
+  }
+  .sky-tour {
+    top: calc(var(--top-edge) + 38px);
+  }
+  .sky-tour .tour-heading strong,
+  .sky-location .guide {
+    display: none;
+  }
+  .camera-tools button {
+    min-height: 32px;
+  }
+}
+@media (orientation: landscape) and (max-height: 540px) {
+  .sky-intro {
+    width: clamp(160px, 28vw, 240px);
+  }
+  .dnode {
+    --coin: clamp(34px, 9vh, 46px);
+  }
+  .dnode .node-label {
+    top: calc(100% + 3px);
+    max-width: 100px;
+  }
+  .dnode .node-label b {
+    font-size: 13px;
+  }
+  .dnode .node-label small {
+    display: none;
+  }
+  .foundation {
+    width: 105px;
+    height: 62px;
+    gap: 1px;
+  }
+  .foundation b {
+    font-size: 16px;
+  }
+  .foundation span {
+    font-size: 11px;
+  }
+}
+@media (max-width: 405px) {
+  html[lang="en"] .brand i,
+  html[lang="en"] .brand small {
+    display: none;
+  }
+  .head .brand svg {
+    display: block;
+    width: 19px;
+  }
+}
+@media (max-width: 350px) {
+  .head .brand i,
+  .head .brand small {
+    display: none;
+  }
+  .sky-controls .guide {
+    font-size: 12px;
+  }
 }
