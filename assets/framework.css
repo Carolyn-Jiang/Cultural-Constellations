@@ -1,0 +1,375 @@
+/* Each branch shares the main exploration surface. The drawing remains the action. */
+#theory-inner .fw {
+  --fw-ink: var(--cream, #f1e8d3);
+  --fw-gold: var(--gold, #c4a269);
+  --fw-bright: var(--pale, #ffdf91);
+  --fw-muted: #b5b7b0;
+  --fw-wire: #8a795d;
+  --fw-sky: var(--bg, #0c131c);
+  width: min(1100px, 100%);
+  margin-inline: auto;
+  padding: clamp(1.25rem, 3.8vw, 3.8rem) clamp(0.65rem, 2.5vw, 2.5rem) 1rem;
+  color: var(--fw-ink);
+}
+.fw-header {
+  text-align: center;
+}
+.fw-header h2 {
+  margin: 0;
+  font: 400 clamp(1.65rem, 3vw, 2.8rem) / 1.2 var(--serif);
+  letter-spacing: -0.025em;
+}
+.fw-header p,
+.fw-scope,
+.fw-reading p {
+  font: 400 1rem/1.65 var(--sans);
+  color: var(--fw-muted);
+}
+.fw-header p {
+  margin: 0.55rem auto 0;
+  max-width: 64ch;
+}
+.fw-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.8rem, 4vw, 4rem);
+  margin: clamp(0.9rem, 2vw, 2rem) auto;
+}
+.fw-visual {
+  flex: 0 1 590px;
+  min-width: 0;
+}
+.fw-body[data-active="true"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+}
+.fw-visual svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 565px;
+  margin: auto;
+  overflow: visible;
+}
+.fw-scope {
+  margin: 0.6rem auto 0;
+  max-width: 55ch;
+  text-align: center;
+  font-size: 0.88rem;
+}
+.fw-hex polygon,
+.fw-rays path,
+.fw-halo,
+.fw-dot,
+.fw-leader,
+.fw-pyramid polygon {
+  vector-effect: non-scaling-stroke;
+}
+.fw-outline {
+  fill: none;
+  stroke: var(--fw-gold);
+  stroke-width: 1.15;
+}
+.fw-rays {
+  fill: none;
+  stroke: var(--fw-wire);
+  stroke-width: 0.75;
+  stroke-dasharray: 2 5;
+  opacity: 0.76;
+}
+.fw-visual text {
+  user-select: none;
+  pointer-events: none;
+}
+.fw-centre {
+  font: italic 17px var(--serif);
+  fill: var(--fw-gold);
+  paint-order: stroke;
+  stroke: var(--fw-sky);
+  stroke-width: 8px;
+  stroke-linejoin: round;
+}
+.fw-control {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.fw-hit {
+  fill: transparent;
+  stroke: transparent;
+  pointer-events: all;
+}
+.fw-halo {
+  fill: var(--fw-sky);
+  stroke: var(--fw-wire);
+  stroke-width: 1.05;
+}
+.fw-dot {
+  fill: var(--fw-gold);
+  stroke: var(--fw-sky);
+  stroke-width: 0.7;
+}
+.fw-node-name,
+.fw-tier-name {
+  font: 500 17px var(--sans);
+  fill: var(--fw-ink);
+  paint-order: stroke;
+  stroke: var(--fw-sky);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+.fw-node-name {
+  text-anchor: middle;
+}
+.fw-band {
+  fill: #635744;
+  stroke: var(--fw-gold);
+  stroke-width: 0.85;
+}
+.fw-pyramid g:nth-of-type(2n) .fw-band {
+  fill: #756345;
+}
+.fw-leader {
+  stroke: var(--fw-wire);
+  stroke-width: 0.8;
+}
+.fw-control:is(:hover, :focus-visible, [aria-pressed="true"]) .fw-halo,
+.fw-control:is(:hover, :focus-visible, [aria-pressed="true"]) .fw-band {
+  stroke: var(--fw-bright);
+  stroke-width: 1.75;
+}
+.fw-control:is(:hover, :focus-visible, [aria-pressed="true"]) .fw-band {
+  fill: #a78550;
+}
+.fw-control:is(:hover, :focus-visible, [aria-pressed="true"]) .fw-dot {
+  fill: #fff1b4;
+}
+.fw-control:is(:hover, :focus-visible, [aria-pressed="true"])
+  :is(.fw-node-name, .fw-tier-name) {
+  fill: var(--fw-bright);
+}
+.fw-control:focus-visible {
+  outline: none;
+}
+.fw-control:focus-visible .fw-hit {
+  stroke: var(--fw-bright);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.fw-fork {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.2rem;
+  width: min(30rem, 90%);
+  margin: clamp(1.15rem, 2vw, 2rem) auto;
+  padding-left: 2.1rem;
+}
+.fw-fork::before {
+  content: "";
+  position: absolute;
+  left: 0.45rem;
+  top: 25%;
+  bottom: 25%;
+  border-left: 1px solid var(--fw-wire);
+}
+.fw-fork .fw-control {
+  position: relative;
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+  min-height: 48px;
+  border: 0;
+  background: transparent;
+}
+.fw-fork .fw-control::before {
+  content: "";
+  position: absolute;
+  left: -1.65rem;
+  top: 50%;
+  width: 1.52rem;
+  border-top: 1px solid var(--fw-wire);
+}
+.fw-fork .fw-control::after {
+  content: "";
+  position: absolute;
+  left: -0.26rem;
+  top: calc(50% - 3px);
+  width: 6px;
+  height: 6px;
+  transform: rotate(45deg);
+  background: var(--fw-gold);
+}
+.fw-fork-title {
+  display: block;
+  font: 400 clamp(1.2rem, 2vw, 1.65rem) / 1.22 var(--serif);
+}
+.fw-fork small {
+  display: block;
+  margin-top: 0.16rem;
+  color: var(--fw-muted);
+  font: 0.85rem/1.45 var(--sans);
+}
+.fw-fork
+  .fw-control:is(:hover, :focus-visible, [aria-pressed="true"])
+  .fw-fork-title {
+  color: var(--fw-bright);
+}
+.fw-fork .fw-control:focus-visible {
+  outline: 2px solid var(--fw-gold);
+  outline-offset: 3px;
+}
+.fw-eyebrow {
+  color: var(--fw-gold);
+  font: 600 0.79rem/1.4 var(--sans);
+  letter-spacing: 0.05em;
+}
+.fw-reading {
+  max-width: 55ch;
+}
+.fw-reading h4 {
+  margin: 0.3rem 0 0.65rem;
+  font: 400 clamp(1.35rem, 2.1vw, 2.05rem) / 1.23 var(--serif);
+  color: var(--fw-ink);
+}
+.fw-reading p {
+  margin: 0 0 0.72rem;
+}
+.fw-reading summary {
+  width: fit-content;
+  padding: 0.5rem 0;
+  cursor: pointer;
+  color: var(--fw-gold);
+  font: 500 0.9rem/1.45 var(--sans);
+}
+.fw-reading summary:hover,
+.fw-reading summary:focus-visible {
+  color: var(--fw-bright);
+}
+.fw-reading summary:focus-visible,
+.fw-links button:focus-visible {
+  outline: 2px solid var(--fw-gold);
+  outline-offset: 3px;
+}
+.fw-reading details p {
+  font-size: 0.92rem;
+}
+.fw-citations {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  flex-wrap: wrap;
+}
+.fw-source {
+  color: var(--fw-muted);
+  font: 0.8rem/1.45 var(--sans);
+  text-decoration: underline;
+  text-decoration-color: var(--fw-wire);
+  text-underline-offset: 0.19em;
+}
+.fw-source:hover {
+  color: var(--fw-bright);
+}
+.fw-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.45rem;
+  margin: clamp(1.25rem, 3vw, 2.5rem) auto 0.4rem;
+}
+.fw-links button {
+  min-height: 42px;
+  color: var(--fw-muted);
+  font: 500 0.88rem/1.38 var(--sans);
+  padding: 0.45rem 0;
+  text-align: left;
+}
+.fw-links button span {
+  color: var(--fw-gold);
+}
+.fw-links button:hover {
+  color: var(--fw-bright);
+  text-decoration: underline;
+  text-underline-offset: 0.23rem;
+}
+@media (max-width: 760px) {
+  #theory-inner .fw {
+    padding-inline: clamp(0.35rem, 2vw, 1.25rem);
+  }
+  .fw-body[data-active="true"] {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .fw-visual,
+  .fw-reading {
+    width: 100%;
+    max-width: 36rem;
+    margin-inline: auto;
+  }
+  .fw-visual svg {
+    max-width: 450px;
+  }
+  .fw-links {
+    gap: 0.15rem 1rem;
+  }
+}
+@media (max-width: 450px) {
+  .fw-node-name,
+  .fw-tier-name {
+    font-size: 20px;
+  }
+  .fw-centre {
+    font-size: 18px;
+  }
+  .fw-header p,
+  .fw-reading p {
+    font-size: 0.96rem;
+  }
+  .fw-links {
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+}
+@media (prefers-contrast: more) {
+  #theory-inner .fw {
+    --fw-muted: #e2e4dc;
+    --fw-wire: #d5c39e;
+  }
+}
+/* Pigment distinguishes the concepts while their connecting lines retain the atlas gold. */
+.fw-visual .fw-control[data-id="0"] {
+  --pigment: #7ea99e;
+}
+.fw-visual .fw-control[data-id="1"] {
+  --pigment: #b77e96;
+}
+.fw-visual .fw-control[data-id="2"] {
+  --pigment: #82a5ca;
+}
+.fw-visual .fw-control[data-id="3"] {
+  --pigment: #b69067;
+}
+.fw-visual .fw-control[data-id="4"] {
+  --pigment: #8a97c4;
+}
+.fw-visual .fw-control[data-id="5"] {
+  --pigment: #b589aa;
+}
+.fw-hex .fw-control .fw-dot {
+  fill: var(--pigment);
+}
+.fw-hex .fw-control .fw-halo {
+  fill: color-mix(in srgb, var(--pigment) 32%, #101923);
+}
+.fw-pyramid .fw-control .fw-band {
+  fill: color-mix(in srgb, var(--pigment) 62%, #16202c);
+  stroke: var(--fw-gold);
+}
+.fw-pyramid
+  .fw-control:is(:hover, :focus-visible, [aria-pressed="true"])
+  .fw-band {
+  fill: var(--pigment);
+  stroke: var(--fw-bright);
+}

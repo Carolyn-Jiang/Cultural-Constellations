@@ -1,520 +1,742 @@
 (() => {
-  const ui = {
-    atlas: ["研究星图", "Research atlas"],
-    theory: ["理论框架", "Framework"],
-    ey: ["CULTURAL CONSTELLATIONS", "CULTURAL CONSTELLATIONS"],
-    title: [
-      "AI 如何解读并重塑文化？",
-      "How Does AI Interpret and Reshape Culture?",
-    ],
-    intro: [
-      "从一件器物、一段旋律或一句译文出发，探索 AI 如何参与文化意义的形成与流传。",
-      "Start with an object, a melody or a translated line. Trace what happens to cultural meaning when AI enters the picture.",
-    ],
-    plot: ["五个领域的研究星图", "Five fields of inquiry"],
-    rel: ["领域与项目", "Field–project relation"],
-    pr: ["公开项目", "Public work"],
-    hint: [
-      "选择领域或项目查看详情，触碰虚线可阅读关联。",
-      "Select a field or project. Hover, focus or tap a dashed line to read its connection.",
-    ],
-    gold: ["◇ 研究主题", "◇ Research topic"],
-    back: ["回到星图", "Back to atlas"],
-    folio: ["星图索引", "Atlas index"],
-    domain: ["研究领域", "Research field"],
-    projects: ["子项目与论文", "Projects and papers"],
-    foundation: ["人类学", "Anthropology"],
-    common: ["共同理论基础", "Shared foundation"],
-    foundationText: [
-      "同一件物品的意义会随讲述者、用途和流转经历而改变。五个研究领域都从人、物与实践之间的关系出发，追问 AI 介入之后，哪些意义被保存，哪些被改写。",
-      "An object’s meaning changes with its uses, its interpreters and its journey. Across all five fields we ask which meanings endure, and which are remade, when AI becomes part of those relationships.",
-    ],
-    openFramework: ["探索理论框架", "Explore the framework"],
-    mapName: [
-      "文化研究五芒星知识图谱",
-      "Pentagram knowledge graph of cultural research",
-    ],
-    openMap: ["展开项目星点", "Show project stars"],
-    closeMap: ["收起项目星点", "Hide project stars"],
-    source: ["公开研究", "Public research"],
-    topic: ["研究主题", "Research topic"],
-  };
-  const domains = [
+  const fields = [
     {
       id: "museum",
       art: "athena",
       name: ["博物馆藏品", "Museum objects"],
       guardian: ["雅典娜与猫头鹰", "Athena & the owl"],
-      desc: [
-        "面对一件藏品，模型能辨认它来自哪里吗？当描述被重新画成图像时，这件物品的哪些细节还能被认出来？",
-        "What can a model infer about an object’s origins from one photograph? When a description becomes an image again, which details still identify that particular object?",
-      ],
-      projects: ["pothen", "polytropos"],
+      papers: ["pothen", "polytropos"],
     },
     {
       id: "rights",
       art: "themis",
       name: ["版权与来源归属", "Copyright & provenance"],
       guardian: ["忒弥斯与天平", "Themis & the scales"],
-      desc: [
-        "作品被临摹、生成或再次传播时，谁的贡献仍然可见？这一领域关注文化作品的署名、来源及其在流转中的变化。",
-        "When a work is copied, generated or circulated again, whose contribution remains visible? This field follows credit and provenance as cultural works move between contexts.",
-      ],
-      projects: ["motif", "provenance"],
+      papers: ["motif", "provenance"],
     },
     {
       id: "calligraphy",
       art: "fuxi",
       name: ["书法", "Calligraphy"],
-      guardian: ["负屃 · Fùxì", "Fùxì"],
-      desc: [
-        "同一个字可以有许多种写法。一笔的轻重、行间的疏密，如何记录书写动作，又如何影响人们对这件作品的理解？",
-        "The same character can be written in many ways. How do the weight of a stroke and the space between lines preserve a gesture and shape a reading?",
-      ],
-      projects: ["composition", "handwriting"],
+      guardian: ["负屃", "Fùxì"],
+      papers: ["composition", "handwriting"],
     },
     {
       id: "music",
       art: "qiuniu",
       name: ["音乐", "Music"],
-      guardian: ["囚牛 · Qiúniú", "Qiúniú"],
-      desc: [
-        "听者怎样从音色、停顿和演奏动作中听出表现力？这一领域关注中国传统音乐如何被聆听、诠释和演奏。",
-        "How do listeners hear expression in a timbre, a pause or a player’s gesture? This field explores how Chinese traditional music is heard, interpreted and performed.",
-      ],
-      projects: ["qiuniu", "interpretation", "instrumental"],
+      guardian: ["囚牛", "Qiúniú"],
+      papers: ["qiuniu", "interpretation", "instrumental"],
     },
     {
       id: "translation",
       art: "diting",
       name: ["翻译", "Translation"],
-      guardian: ["谛听 · Dìtīng", "Dìtīng"],
-      desc: [
-        "一个称谓、一句成语离开原来的语境，如何让另一种语言的读者听懂其中的人情与分寸？这一领域探讨翻译中的文化意义。",
-        "When a term of address or an idiom travels into another language, how does a reader recover the relationship it implies? Translation brings these small acts of cultural interpretation into focus.",
-      ],
-      projects: ["diting", "revision", "languages"],
+      guardian: ["谛听", "Dìtīng"],
+      papers: ["diting", "revision", "languages"],
     },
   ];
-  const satellites = {
-    pothen: [311, 54],
-    polytropos: [689, 54],
-    motif: [863, 161],
-    provenance: [909, 330],
-    composition: [864, 491],
-    handwriting: [774, 634],
-    qiuniu: [151, 468],
-    interpretation: [140, 575],
-    instrumental: [296, 645],
-    diting: [139, 143],
-    revision: [102, 259],
-    languages: [126, 378],
-  };
-  const mid = [500, 331],
-    radius = 224;
-  const located = domains.map((d, i) => {
-    const a = ((i * 72 - 90) * Math.PI) / 180;
-    return {
-      ...d,
-      x: mid[0] + radius * Math.cos(a),
-      y: mid[1] + radius * Math.sin(a),
-    };
-  });
-  const byDomain = Object.fromEntries(located.map((d) => [d.id, d]));
+  const fieldById = Object.fromEntries(fields.map((d) => [d.id, d]));
   const owner = Object.fromEntries(
-    located.flatMap((d) => d.projects.map((id) => [id, d])),
+    fields.flatMap((d) => d.papers.map((p) => [p, d])),
   );
-  const $ = (selector) => document.querySelector(selector);
-  const map = $("#map"),
-    panel = $("#details"),
-    tip = $("#tip"),
-    plot = $("#plot");
-  let lang = 1;
-  const initialLang = new URLSearchParams(location.search).get("lang");
-  if (initialLang === "zh" || initialLang === "en")
-    lang = Number(initialLang === "en");
-  else {
-    try {
-      let saved = localStorage.getItem("atlas-language");
-      if (saved) lang = Number(saved === "en");
-      else lang = Number(!navigator.language.toLowerCase().startsWith("zh"));
-    } catch {}
-  }
-  let selection = { kind: "domain", id: "museum" },
-    pinned = null;
-  const choose = (pair) => pair[lang];
-  const t = (k) => choose(ui[k]);
+  const ui = {
+    title: [
+      "AI 如何解读并重塑文化？",
+      "How Does AI Interpret and Reshape Culture?",
+    ],
+    intro: [
+      "文化意义在哪里发生变化？从行动者网络理论出发",
+      "Where does cultural meaning change? Start with actor-network theory",
+    ],
+    fields: ["五个研究领域", "Research fields"],
+    foundation: ["人类学", "Anthropology"],
+    anthropology: ["行动者网络理论", "Actor-network theory"],
+    disciplines: ["认知科学六学科", "Six disciplines"],
+    processes: ["六类认知过程", "Six cognitive processes"],
+    ai: ["人工智能与认知科学", "AI and cognitive science"],
+    open: [
+      "选择一个领域，展开它的论文。",
+      "Choose a field to uncover its papers.",
+    ],
+    pick: [
+      "选择一篇论文，探索它与其他研究的联系。",
+      "Choose a paper to explore its connections with other work.",
+    ],
+    compare: [
+      "触碰金线阅读关联，选择相邻论文继续探索。",
+      "Explore a gold line to read the connection, then follow a neighbouring paper.",
+    ],
+    return: ["返回五个领域", "All five fields"],
+    close: ["收起文字", "Close reading"],
+    graph: ["研究关系图谱", "Research connections"],
+  };
+  const lenses = {
+    pothen: [
+      "disciplines",
+      5,
+      ["从计算表征理解归属判断", "Explore computational representation"],
+    ],
+    polytropos: [
+      "processes",
+      4,
+      ["哪些证据足以支持判断？", "What counts as evidence for a judgement?"],
+    ],
+    diting: [
+      "disciplines",
+      2,
+      ["从语言学看隐含意义", "Explore implicit meaning in linguistics"],
+    ],
+  };
+  const $ = (q) => document.querySelector(q);
+  const stage = $("#graph-scene"),
+    map = $("#map"),
+    nodes = $("#nodes"),
+    card = $("#node-card"),
+    tip = $("#tip");
+  const clamp = (n, min, max) => Math.max(min, Math.min(n, max));
   const esc = (s) =>
     String(s).replace(
-      /[&<>"']/g,
-      (c) =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;",
-        })[c],
+      /[&<>"]/g,
+      (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
     );
-  const fmt = (value) => Number(value.toFixed(2));
-  function sky() {
-    let seed = 6197;
-    const random = () =>
-      ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
-    const dust = Array.from({ length: 247 }, () => {
-      const x = fmt(13 + 974 * random()),
-        y = fmt(14 + 654 * random()),
-        r = fmt(0.37 + 1.02 * random() ** 3),
-        opacity = fmt(0.23 + 0.47 * random());
-      return (
-        '<circle cx="' +
-        x +
-        '" cy="' +
-        y +
-        '" r="' +
-        r +
-        '" fill="#c2c6ba" opacity="' +
-        opacity +
-        '"/>'
+  const initialLang = new URLSearchParams(location.search).get("lang");
+  let lang = Number(!navigator.language.toLowerCase().startsWith("zh"));
+  try {
+    const s = localStorage.getItem("atlas-language");
+    if (s) lang = +(s === "en");
+  } catch {}
+  if (["en", "zh"].includes(initialLang)) lang = +(initialLang === "en");
+  const l = (a) => a[lang],
+    t = (k) => l(ui[k]);
+  const traits = ["anthropology", "disciplines", "processes", "ai"];
+  const fieldKey = (id) => "field-" + id,
+    paperKey = (id) => "paper-" + id;
+  let renderedLocation = location.href;
+  let drawnWidth = 0, drawnHeight = 0;
+  let state,
+    frame = 0,
+    positions = {},
+    targets = {},
+    edges = [],
+    shownCard = false,
+    pinnedEdge = null;
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const mobile = window.matchMedia("(max-width:640px)");
+  const controls = new Map();
+  const relationKey = (r) => r.a + "--" + r.b;
+  function parseRoute() {
+    const [kind, id, index] = location.hash.slice(1).split("/");
+    if (kind === "paper" && owner[id])
+      return { view: "fields", field: owner[id].id, paper: id };
+    if (kind === "field" && fieldById[id])
+      return { view: "fields", field: id, paper: null };
+    if (kind === "theory")
+      return {
+        view: traits.includes(id) ? id : "anthropology",
+        index:
+          index !== undefined && /^[0-5]$/.test(index) ? Number(index) : null,
+      };
+    return { view: "fields", field: null, paper: null };
+  }
+  function navigate(hash) {
+    if (location.hash === hash) {
+      applyRoute();
+      return;
+    }
+    history.pushState(null, "", hash);
+    applyRoute();
+    const guide = $("#trail").hidden ? $(".graph-tools") : $("#trail");
+    if (guide.getBoundingClientRect().top < -50)
+      guide.scrollIntoView({ block: "start", behavior: "instant" });
+  }
+  window.exploreView = (view, index = null) => {
+    if (view === "fields") navigate("#atlas");
+    else if (traits.includes(view))
+      navigate(
+        "#theory/" + view + (Number.isInteger(index) ? "/" + index : ""),
       );
-    }).join("");
-    const tick = Array.from({ length: 120 }, (_, k) => {
-      const a = (k * Math.PI) / 60,
-        major = k % 6 === 0,
-        r1 = 243,
-        r2 = major ? 251 : 246;
-      return (
-        '<path d="M' +
-        fmt(500 + r1 * Math.cos(a)) +
-        " " +
-        fmt(331 + r1 * Math.sin(a)) +
-        "L" +
-        fmt(500 + r2 * Math.cos(a)) +
-        " " +
-        fmt(331 + r2 * Math.sin(a)) +
-        '" stroke="#b4a581" stroke-width="' +
-        (major ? 1.25 : 0.8) +
-        '" opacity="' +
-        (major ? 0.47 : 0.31) +
-        '"/>'
+  };
+  window.explorePaper = (id) => {
+    if (owner[id]) navigate("#paper/" + id);
+  };
+  const goField = (id) => navigate(id ? "#field/" + id : "#atlas");
+  function createNodes() {
+    nodes.replaceChildren();
+    controls.clear();
+    function add(key, className, inner, action) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = className;
+      button.innerHTML = inner;
+      button.hidden = true;
+      button.addEventListener("click", action);
+      nodes.append(button);
+      controls.set(key, button);
+      return button;
+    }
+    const core = add(
+      "core",
+      "foundation",
+      "<b>" + t("foundation") + "</b><span>" + t("anthropology") + "</span>",
+      () => window.exploreView("anthropology", 1),
+    );
+    core.setAttribute(
+      "aria-label",
+      t("foundation") + " · " + t("anthropology"),
+    );
+    fields.forEach((d) => {
+      const field = add(
+        fieldKey(d.id),
+        "dnode",
+        '<span class="coin"><img draggable="false" alt="" src="' +
+          ART[d.art] +
+          '"></span><span aria-hidden="true" class="switch"></span><span class="node-label"><b>' +
+          esc(l(d.name)) +
+          "</b><small>" +
+          esc(l(d.guardian)) +
+          "</small></span>",
+        () => goField(state.field === d.id && !state.paper ? null : d.id),
       );
-    }).join("");
-    const points = [0, 2, 4, 1, 3, 0]
-      .map((i) => fmt(located[i].x) + "," + fmt(located[i].y))
-      .join(" ");
-    const crosses = [
-      [39, 51],
-      [215, 77],
-      [769, 52],
-      [931, 85],
-      [46, 411],
-      [703, 611],
-      [506, 648],
-      [946, 517],
-    ]
+      field.dataset.domain = d.id;
+      field.setAttribute("aria-label", l(d.name) + " · " + l(d.guardian));
+      for (const id of d.papers) {
+        const item = CAT[id],
+          released = item.links.length > 0;
+        const paper = add(
+          paperKey(id),
+          "pnode " + (released ? "public" : "topic"),
+          '<span class="star" aria-hidden="true">' +
+            (released ? "✦" : "◇") +
+            '</span><span class="node-label">' +
+            esc(l(item.short)) +
+            "</span>",
+          () => {
+            if (state.paper === id) {
+              shownCard = !shownCard;
+              updateCard();
+              relayout(false);
+            } else window.explorePaper(id);
+          },
+        );
+        paper.dataset.project = id;
+        paper.setAttribute("aria-label", l(item.title));
+        paper.setAttribute("aria-controls", "node-card");
+      }
+    });
+  }
+  function buildTrail() {
+    const trail = $("#trail");
+    const route = (text, hash) =>
+      '<button type="button" data-route="' +
+      hash +
+      '">' +
+      esc(text) +
+      "</button>";
+    const current = (text) =>
+      '<span aria-current="location">' + esc(text) + "</span>";
+    let crumbs = [];
+    if (state.view === "fields") {
+      if (!state.field) {
+        trail.hidden = true;
+        return;
+      }
+      crumbs = [route(t("fields"), "#atlas")];
+      const d = fieldById[state.field];
+      if (state.paper)
+        crumbs.push(
+          route(l(d.name), "#field/" + d.id),
+          current(l(CAT[state.paper].short)),
+        );
+      else crumbs.push(current(l(d.name)));
+    } else {
+      crumbs = [route(t("fields"), "#atlas")];
+      if (state.view !== "anthropology")
+        crumbs.push(route(t("anthropology"), "#theory/anthropology"));
+      crumbs.push(current(t(state.view)));
+    }
+    trail.hidden = false;
+    trail.innerHTML = crumbs.join('<i aria-hidden="true">›</i>');
+  }
+  function neighbours(id) {
+    return PAPER_RELATIONS.filter((r) => r.a === id || r.b === id);
+  }
+  function buildEdges() {
+    edges = [];
+    const domainEdge = (d, p) => ({
+      from: fieldKey(d),
+      to: paperKey(p),
+      label: l(CAT[p].short),
+      detail: l(CAT[p].relation),
+      id: p,
+    });
+    if (state.paper) {
+      edges.push(domainEdge(state.field, state.paper));
+      for (const r of neighbours(state.paper)) {
+        edges.push({
+          from: paperKey(state.paper),
+          to: paperKey(r.a === state.paper ? r.b : r.a),
+          id: relationKey(r),
+          label: l(r.label),
+          detail: l(r.text),
+          paper: true,
+        });
+      }
+    } else if (state.field)
+      edges = fieldById[state.field].papers.map((id) =>
+        domainEdge(state.field, id),
+      );
+    $("#edges").innerHTML = edges
       .map(
-        ([x, y]) =>
-          '<path transform="translate(' +
-          x +
-          " " +
-          y +
-          ')" d="M-4 0 0 -.8 0 -6 .9 0 4 0 0 .9 0 6 -.9 0Z" fill="#d9c291" opacity=".8"/>',
+        (e, i) =>
+          '<g role="button" tabindex="0" class="edge ' +
+          (e.paper ? "paper-edge" : "field-edge") +
+          '" ' +
+          (e.paper ? "data-pair" : "data-edge") +
+          '="' +
+          e.id +
+          '" data-idx="' +
+          i +
+          '" aria-label="' +
+          esc(e.label) +
+          '"><path class="hit"/><path class="domain-link"/><path class="gleam" pathLength="100"/></g>',
       )
       .join("");
-    return (
-      '<g class="starplot">' +
-      dust +
-      crosses +
-      '<g class="gridline"><ellipse cx="500" cy="331" rx="462" ry="150" transform="rotate(-20 500 331)"/><ellipse cx="500" cy="331" rx="320" ry="299" transform="rotate(34 500 331)" stroke-dasharray="2 9"/><ellipse cx="500" cy="331" rx="298" ry="261" transform="rotate(34 500 331)"/></g><circle class="ring" cx="500" cy="331" r="242"/>' +
-      tick +
-      '<circle class="ring" cx="500" cy="331" r="173"/><circle class="ring" cx="500" cy="331" r="94" stroke-dasharray="2 6"/><polyline class="outline" points="' +
-      points +
-      '"/></g>'
-    );
+    edges.forEach((e, i) => {
+      e.el = $("#edges").children[i];
+      e.paths = [...e.el.children];
+    });
   }
-  const defs =
-    '<defs><linearGradient id="goldLine"><stop stop-color="#e0aa56"/><stop offset=".43" stop-color="#fff2bc"/><stop offset=".7" stop-color="#d6a054"/><stop offset="1" stop-color="#f3c781"/></linearGradient><clipPath id="portraitClip"><circle r="47"/></clipPath></defs>';
-  function fieldMarkup(d) {
-    const title = esc(choose(d.name)),
-      guardian = esc(choose(d.guardian));
-    return (
-      '<g class="dnode" role="button" tabindex="0" data-domain="' +
-      d.id +
-      '" aria-label="' +
-      title +
-      '" transform="translate(' +
-      fmt(d.x) +
-      " " +
-      fmt(d.y) +
-      ')"><circle class="edge-ring" r="53"/><circle class="coin" r="49"/><image x="-48" y="-48" width="96" height="96" href="' +
-      ART[d.art] +
-      '" clip-path="url(#portraitClip)"/><g text-anchor="middle" class="folio"><text class="dname" y="73">' +
-      title +
-      '</text><text class="dgen" y="90">' +
-      guardian +
-      "</text></g></g>"
-    );
-  }
-  function projectMarkup(id) {
-    const [x, y] = satellites[id],
-      item = CAT[id],
-      published = !!item.links.length;
-    return (
-      '<g class="pnode ' +
-      (published ? "public" : "topic") +
-      '" role="button" tabindex="0" data-project="' +
-      id +
-      '" aria-label="' +
-      esc(choose(item.title)) +
-      '" transform="translate(' +
-      x +
-      " " +
-      y +
-      ')"><rect class="tap" x="-67" y="-12" width="134" height="40" rx="10"/><path class="diamond" d="M0 -5 5 0 0 5 -5 0Z"/><text y="23" text-anchor="middle">' +
-      esc(choose(item.short)) +
-      "</text></g>"
-    );
-  }
-  function edgeMarkup(id) {
-    const d = owner[id],
-      [x, y] = satellites[id],
-      path = "M" + fmt(d.x) + " " + fmt(d.y) + "L" + x + " " + y;
-    return (
-      '<g class="edge" role="button" tabindex="0" aria-label="' +
-      esc(choose(d.name) + " · " + choose(CAT[id].short)) +
-      '" data-edge="' +
-      id +
-      '"><path class="hit" d="' +
-      path +
-      '"/><path class="domain-link" d="' +
-      path +
-      '"/><path class="gleam" pathLength="145" d="' +
-      path +
-      '"/></g>'
-    );
-  }
-  function foundationMarkup() {
-    const petals = Array.from(
-      { length: 16 },
-      (_, i) =>
-        '<path d="M0 -55v-' +
-        (i % 4 === 0 ? 10 : 4) +
-        '" transform="rotate(' +
-        i * 22.5 +
-        ')" stroke="#d3b779" opacity=".75"/>',
-    ).join("");
-    return (
-      '<g class="foundation" data-foundation="true" role="button" tabindex="0" aria-label="' +
-      t("foundation") +
-      '" transform="translate(500 331)"><circle r="68" fill="#11202a" stroke="#8b7956"/><circle r="53" fill="none" stroke="#82724f" stroke-width=".8"/>' +
-      petals +
-      '<path d="M-10 -30 0 -33 10 -30 0 -27Z" fill="#c2a773"/><text class="centertitle" y="2" text-anchor="middle">' +
-      t("foundation") +
-      '</text><text class="centersub" y="24" text-anchor="middle">' +
-      t("common") +
-      "</text></g>"
-    );
-  }
-  function showPanel() {
-    const { kind, id } = selection,
-      d = kind === "domain" ? byDomain[id] : owner[id],
-      isProject = kind === "project";
-    let content;
-    if (kind === "foundation") {
-      content =
-        '<div class="panelbody"><div class="label">' +
-        t("common") +
-        "</div><h2>" +
-        t("foundation") +
-        "</h2><p>" +
-        t("foundationText") +
-        '</p><div class="links"><a href="#theory">' +
-        t("openFramework") +
-        "</a></div></div>";
+  function layout() {
+    const w = stage.clientWidth,
+      h = stage.clientHeight,
+      small = mobile.matches;
+    const points = {};
+    const put = (k, x, y) => {
+      points[k] = { x, y };
+    };
+    const cx = w / 2,
+      cy = h * 0.46;
+    let r = small
+      ? Math.min(w * 0.306, h * 0.35)
+      : Math.min(w * 0.248, h * 0.342);
+    let x = cx,
+      y = cy;
+    const di = fields.findIndex((d) => d.id === state.field),
+      a = ((di * 72 - 90) * Math.PI) / 180,
+      ux = Math.cos(a),
+      uy = Math.sin(a);
+    if (state.field && !state.paper && !small) {
+      r *= 0.83;
+      x -= ux * Math.min(w * 0.075, 83);
+      y -= uy * h * 0.115;
+    }
+    if (state.paper) {
+      const parent = fieldKey(state.field),
+        selected = paperKey(state.paper);
+      const compact = w < 900,
+        near = neighbours(state.paper);
+      const parentY = small ? 44 : 56,
+        centerY = small ? 158 : 195;
+      put(parent, cx, parentY);
+      put(selected, cx, centerY);
+      const labelHeight =
+        controls.get(selected).querySelector(".node-label").offsetHeight || 32;
+      const cardTop = centerY + Math.max(50, labelHeight + 34);
+      const readingHeight = shownCard ? card.offsetHeight : 0;
+      const connectorSpace = compact ? 53 : 63;
+      const peerY =
+        cardTop +
+        (compact
+          ? readingHeight + connectorSpace
+          : Math.min(95, readingHeight * 0.4) + 48);
+      const lowerY = Math.max(
+        cardTop + readingHeight + 54,
+        peerY + (compact ? 100 : 85),
+      );
+      const minHeight =
+        (near.length > 2 ? lowerY : Math.max(peerY, cardTop + readingHeight)) +
+        110;
+      stage.style.minHeight = Math.ceil(minHeight) + "px";
+      near.forEach((rel, i) => {
+        const id = rel.a === state.paper ? rel.b : rel.a;
+        const spread = compact ? w * 0.265 : Math.min(w * 0.335, 425);
+        const point =
+          i === 2 ? [cx, lowerY] : [cx + (i === 0 ? -spread : spread), peerY];
+        put(paperKey(id), ...point);
+      });
+    } else if (w < 820 && state.field) {
+      put(fieldKey(state.field), cx, h * 0.21);
+      const papers = fieldById[state.field].papers;
+      papers.forEach((id, i) => {
+        const locations =
+          papers.length === 2
+            ? [
+                [0.255, 0.55],
+                [0.745, 0.55],
+              ]
+            : [
+                [0.195, 0.53],
+                [0.5, 0.68],
+                [0.805, 0.53],
+              ];
+        const [px, py] = locations[i];
+        put(paperKey(id), w * px, h * py);
+      });
     } else {
-      const plate =
-        '<div class="plate"><img src="' +
-        ART[d.art] +
-        '" alt="' +
-        esc(choose(d.guardian)) +
-        '"><div class="frame"></div></div>';
-      if (!isProject) {
-        const rows = d.projects
-          .map(
-            (key) =>
-              '<button type="button" class="projectrow" data-open="' +
-              key +
-              '"><span>' +
-              esc(choose(CAT[key].short)) +
-              "</span><small>" +
-              t(CAT[key].links.length ? "source" : "topic") +
-              "</small></button>",
-          )
-          .join("");
-        content =
-          plate +
-          '<div class="panelbody"><div class="label">' +
-          t("domain") +
-          " · " +
-          esc(choose(d.guardian)) +
-          "</div><h2>" +
-          esc(choose(d.name)) +
-          "</h2><p>" +
-          esc(choose(d.desc)) +
-          '</p><hr><div class="listtitle">' +
-          t("projects") +
-          "</div>" +
-          rows +
-          "</div>";
-      } else {
-        const item = CAT[id],
-          anchors = item.links
-            .map(
-              (link) =>
-                '<a href="' +
-                esc(link.url) +
-                '" target="_blank" rel="noopener noreferrer">' +
-                esc(choose(link.label)) +
-                "</a>",
-            )
-            .join("");
-        content =
-          plate +
-          '<div class="panelbody"><button class="crumb" type="button" data-parent="' +
-          d.id +
-          '">‹ ' +
-          esc(choose(d.name)) +
-          '</button><h2 class="project-name">' +
-          esc(choose(item.title)) +
-          "</h2>" +
-          (anchors
-            ? "<p>" +
-              esc(choose(item.description)) +
-              '</p><div class="links">' +
-              anchors +
-              "</div>"
-            : "") +
-          "</div>";
+      put("core", x, y);
+      fields.forEach((d, i) => {
+        const ang = ((i * 72 - 90) * Math.PI) / 180;
+        put(fieldKey(d.id), x + r * Math.cos(ang), y + r * Math.sin(ang));
+      });
+      if (state.field) {
+        const d = fieldById[state.field],
+          base = points[fieldKey(d.id)];
+        d.papers.forEach((id, i) => {
+          const s = d.papers.length === 2 ? (i - 0.5) * 1.55 : i - 1;
+          const side = s * Math.min(w * 0.142, 153),
+            out = Math.min(w * 0.17, 185);
+          const px = base.x + ux * out - uy * side,
+            py = base.y + uy * Math.min(h * 0.157, 100) + ux * side;
+          put(paperKey(id), clamp(px, 88, w - 88), clamp(py, 25, h - 49));
+        });
       }
     }
-    if (kind === "domain" || (isProject && CAT[id].links.length)) {
-      const lenses = {
-        museum: [5, 3],
-        rights: [1, 4],
-        calligraphy: [0, 5],
-        music: [3, 1],
-        translation: [2, 4],
-        pothen: [5, 3],
-        polytropos: [5, 4],
-        diting: [2, 4],
-      };
-      const perspectives = [
-        ["人类学", "Anthropology"],
-        ["哲学", "Philosophy"],
-        ["语言学", "Linguistics"],
-        ["心理学", "Psychology"],
-        ["神经科学", "Neuroscience"],
-        ["计算机科学", "Computer science"],
-      ];
-      const processes = [
-        ["记忆", "Remember"],
-        ["理解", "Understand"],
-        ["应用", "Apply"],
-        ["分析", "Analyze"],
-        ["评价", "Evaluate"],
-        ["创造", "Create"],
-      ];
-      const [view, activity] = lenses[id];
-      const guide = choose(["从这个视角阅读", "A lens for reading"]);
-      content +=
-        '<div class="lenspath"><div class="label">' +
-        guide +
-        '</div><a href="#theory" data-view="' +
-        view +
-        '" data-activity="' +
-        activity +
-        '">' +
-        choose(perspectives[view]) +
-        " × " +
-        choose(processes[activity]) +
-        "</a></div>";
+    return points;
+  }
+  function clearTip() {
+    for (const e of edges) {
+      e.el.classList.remove("hot");
+      e.el.removeAttribute("aria-describedby");
     }
-    panel.innerHTML =
-      '<div class="panelhead"><span>' +
-      t("folio") +
-      '</span><span class="rosette" aria-hidden="true">✧</span></div>' +
-      content;
-    map.querySelectorAll(".dnode,.pnode,.foundation").forEach((node) => {
-      const matches =
-        kind === "foundation"
-          ? node.hasAttribute("data-foundation")
-          : kind === "domain"
-            ? node.dataset.domain === id
-            : node.dataset.project === id;
-      node.classList.toggle("selected", matches);
-      node.setAttribute("aria-pressed", String(matches));
-    });
-  }
-  function hideTip() {
-    map.querySelectorAll(".edge.on").forEach((el) => {
-      el.classList.remove("on");
-      el.removeAttribute("aria-describedby");
-    });
     tip.hidden = true;
+    tip.removeAttribute("data-on");
   }
-  function showTip(el) {
-    hideTip();
-    const key = el.dataset.edge,
-      item = CAT[key],
-      p = el.querySelector(".hit");
-    el.classList.add("on");
-    el.setAttribute("aria-describedby", "tip");
-    tip.innerHTML =
-      "<strong>" +
-      esc(choose(owner[key].name)) +
-      " · " +
-      esc(choose(item.short)) +
-      "</strong>" +
-      esc(choose(item.relation));
+  function inStage(node) {
+    const rect = node.getBoundingClientRect(),
+      base = stage.getBoundingClientRect();
+    return {
+      left: rect.left - base.left,
+      top: rect.top - base.top,
+      right: rect.right - base.left,
+      bottom: rect.bottom - base.top,
+    };
+  }
+  function overlap(a, b) {
+    return (
+      Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) *
+      Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top))
+    );
+  }
+  function positionBox(box, p, avoid = [], isTip = false) {
+    const bw = box.offsetWidth,
+      bh = box.offsetHeight,
+      w = stage.clientWidth,
+      h = stage.clientHeight;
+    const spare = 14,
+      gap = isTip ? 15 : 29;
+    const choices = [
+      [p.x - bw / 2, p.y + gap + 13],
+      [p.x + gap, p.y - bh / 2],
+      [p.x - gap - bw, p.y - bh / 2],
+      [p.x - bw / 2, p.y - gap - bh],
+    ];
+    let best = null;
+    for (const [dx, dy] of choices) {
+      const left = clamp(
+          dx,
+          spare / 2,
+          Math.max(spare / 2, w - bw - spare / 2),
+        ),
+        top = clamp(dy, 5, Math.max(5, h - bh - 5));
+      const rect = { left, top, right: left + bw, bottom: top + bh };
+      const score =
+        avoid.reduce((n, a) => n + overlap(a, rect), 0) * 20 +
+        Math.abs(left - dx) +
+        Math.abs(top - dy);
+      if (!best || score < best.score) best = { ...rect, score };
+    }
+    box.style.left = best.left + "px";
+    box.style.top = best.top + "px";
+    return best;
+  }
+  function showTip(e) {
+    if (!e) return;
+    clearTip();
+    e.el.classList.add("hot");
+    e.el.setAttribute("aria-describedby", "tip");
     tip.hidden = false;
-    const m = p
-      .getPointAtLength(p.getTotalLength() * 0.64)
-      .matrixTransform(p.getScreenCTM());
-    const box = tip.parentElement.getBoundingClientRect(),
-      half = tip.offsetWidth * 0.5 + 4;
-    tip.style.left =
-      Math.max(half, Math.min(box.width - half, m.x - box.left)) + "px";
-    const anchorY = m.y - box.top;
-    const topBranch = satellites[key][1] < 110;
-    tip.style.top =
-      (topBranch
-        ? Math.min(box.height - 6, anchorY + tip.offsetHeight + 17)
-        : Math.max(tip.offsetHeight + 8, anchorY - 10)) + "px";
+    tip.dataset.on = e.id;
+    tip.innerHTML = "<strong>" + esc(e.label) + "</strong> " + esc(e.detail);
+    const a = positions[e.from],
+      b = positions[e.to];
+    if (!a || !b) return;
+    const avoid = [];
+    for (const [k, el] of controls)
+      if (targets[k]) {
+        avoid.push(inStage(el));
+        const label = el.querySelector(".node-label");
+        if (label) avoid.push(inStage(label));
+      }
+    if (!card.hidden) avoid.push(inStage(card));
+    const path = e.paths[0],
+      point = path.getPointAtLength(path.getTotalLength() * 0.63);
+    positionBox(tip, point, avoid, true);
   }
-  function select(kind, id, fromMap = false) {
-    pinned = null;
-    hideTip();
-    selection = { kind, id };
-    showPanel();
-    if (fromMap && window.matchMedia("(max-width:820px)").matches)
-      panel.scrollIntoView({ block: "nearest" });
+  function updateCard() {
+    card.hidden = !state.paper || !shownCard || state.view !== "fields";
+    $("#callout-line").setAttribute("hidden", "");
+    if (!state.paper) return;
+    const id = state.paper,
+      item = CAT[id],
+      lens = lenses[id],
+      pub = item.links.length > 0;
+    controls.get(paperKey(id)).setAttribute("aria-expanded", String(shownCard));
+    if (card.hidden) return;
+    card.classList.toggle("topic", !pub);
+    card.dataset.anchor = id;
+    const primary = item.links
+      .map(
+        (v) =>
+          '<a href="' +
+          esc(v.url) +
+          '" target="_blank" rel="noopener noreferrer">' +
+          esc(l(v.label)) +
+          "</a>",
+      )
+      .join("");
+    const theory = lens
+      ? '<a href="#theory/' +
+        lens[0] +
+        "/" +
+        lens[1] +
+        '">' +
+        esc(l(lens[2])) +
+        "</a>"
+      : "";
+    card.innerHTML =
+      '<button class="card-close" type="button" aria-label="' +
+      t("close") +
+      '">×</button><h2 id="card-title">' +
+      esc(l(item.title)) +
+      "</h2>" +
+      (pub
+        ? "<p>" +
+          esc(l(item.description)) +
+          '</p><div class="card-links">' +
+          primary +
+          theory +
+          "</div>"
+        : "");
   }
-  function updateViewBox() {
-    const compact =
-      window.matchMedia("(max-width:600px)").matches &&
-      !plot.classList.contains("expanded");
-    map.setAttribute("viewBox", compact ? "120 34 760 610" : "0 0 1000 685");
-    $("#zoom").setAttribute(
-      "aria-expanded",
-      String(plot.classList.contains("expanded")),
+  function placeCard() {
+    if (card.hidden) return;
+    const key = paperKey(state.paper),
+      p = positions[key];
+    if (!p) return;
+    const label = controls.get(key).querySelector(".node-label");
+    const top = p.y + Math.max(50, label.offsetHeight + 34);
+    const left = clamp(
+      p.x - card.offsetWidth / 2,
+      7,
+      stage.clientWidth - card.offsetWidth - 7,
     );
-    $("#zoom").textContent = t(
-      plot.classList.contains("expanded") ? "closeMap" : "openMap",
+    card.style.left = left + "px";
+    card.style.top = top + "px";
+    const q = {
+      left,
+      top,
+      right: left + card.offsetWidth,
+      bottom: top + card.offsetHeight,
+    };
+    const bx = clamp(p.x, q.left, q.right),
+      by = clamp(p.y, q.top, q.bottom);
+    const line = $("#callout-line");
+    line.removeAttribute("hidden");
+    line.setAttribute("d", "M" + p.x + " " + p.y + " L" + bx + " " + by);
+  }
+  function draw(p) {
+    positions = p;
+    for (const [key, el] of controls) {
+      const point = p[key];
+      if (!point) continue;
+      el.style.left = point.x + "px";
+      el.style.top = point.y + "px";
+    }
+    for (const e of edges) {
+      const a = p[e.from],
+        b = p[e.to];
+      if (!a || !b) continue;
+      let d = "M" + a.x + " " + a.y + " L" + b.x + " " + b.y;
+      if (e.paper && shownCard && !card.hidden && stage.clientWidth < 900) {
+        const side =
+          b.x < a.x || (b.x === a.x && edges.indexOf(e) % 2 === 0) ? -1 : 1;
+        const offset = Math.min(
+          stage.clientWidth / 2 - 5,
+          card.offsetWidth / 2 + 17,
+        );
+        const lane = a.x + side * offset;
+        d =
+          "M" +
+          a.x +
+          " " +
+          a.y +
+          " Q" +
+          lane +
+          " " +
+          a.y +
+          " " +
+          lane +
+          " " +
+          (a.y + 55) +
+          " L" +
+          lane +
+          " " +
+          (b.y - 30) +
+          " Q" +
+          lane +
+          " " +
+          b.y +
+          " " +
+          b.x +
+          " " +
+          b.y;
+      }
+      for (const path of e.paths) path.setAttribute("d", d);
+    }
+    const order = [0, 2, 4, 1, 3];
+    const f = order.map((i) => p[fieldKey(fields[i].id)]);
+    $("#pentagram").setAttribute(
+      "d",
+      f.every(Boolean)
+        ? f.map((v, i) => (i ? "L" : "M") + v.x + " " + v.y).join(" ") + " Z"
+        : "",
     );
   }
-  function render() {
-    hideTip();
-    pinned = null;
+  function relayout(animate) {
+    if (state.view !== "fields" || !stage.clientWidth) return;
+    cancelAnimationFrame(frame);
+    targets = layout();
+    drawnWidth = stage.clientWidth;
+    drawnHeight = stage.clientHeight;
+    const start = {};
+    for (const [key, el] of controls) {
+      const point = targets[key],
+        wasHidden = el.hidden;
+      el.hidden = !point;
+      if (!point) continue;
+      const parent = el.dataset.project
+        ? fieldKey(owner[el.dataset.project].id)
+        : key;
+      const origin =
+        state.paper && el.dataset.project && el.dataset.project !== state.paper
+          ? paperKey(state.paper)
+          : parent;
+      start[key] =
+        positions[key] || positions[origin] || targets[origin] || point;
+      if (wasHidden && animate && !reduced.matches)
+        el.animate([{ opacity: 0 }, { opacity: 1 }], {
+          duration: 370,
+          easing: "ease-out",
+        });
+    }
+    if (!animate || reduced.matches) {
+      draw(targets);
+      placeCard();
+      return;
+    }
+    const began = performance.now();
+    function tick(now) {
+      const progress = Math.min(1, (now - began) / 430),
+        ease = 1 - Math.pow(1 - progress, 3);
+      const p = {};
+      for (const [key, end] of Object.entries(targets)) {
+        const s = start[key];
+        p[key] = {
+          x: s.x + (end.x - s.x) * ease,
+          y: s.y + (end.y - s.y) * ease,
+        };
+      }
+      draw(p);
+      placeCard();
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    }
+    frame = requestAnimationFrame(tick);
+  }
+  function render(animate = true) {
+    cancelAnimationFrame(frame);
+    pinnedEdge = null;
+    clearTip();
+    const theory = state.view !== "fields";
+    $("#theory").hidden = !theory;
+    stage.hidden = theory;
+    $(".graph-tools").hidden = theory;
+    $("#enter-theory").hidden = theory;
+    buildTrail();
+    if (theory) {
+      card.hidden = true;
+      window.renderTheory(lang, state.view, state.index);
+      return;
+    }
+    if (!state.paper) stage.style.minHeight = "";
+    stage.classList.toggle("has-branch", !!state.field);
+    stage.classList.toggle("paper-focus", !!state.paper);
+    $("#graph-guide").textContent = t(
+      state.paper ? "compare" : state.field ? "pick" : "open",
+    );
+    $("#all-fields").hidden = !state.field;
+    $("#all-fields").textContent = t("return");
+    buildEdges();
+    for (const [k, el] of controls) {
+      if (el.dataset.domain) {
+        const active = el.dataset.domain === state.field;
+        el.setAttribute("aria-expanded", String(active));
+        el.querySelector(".switch").textContent = active ? "−" : "+";
+      }
+      if (el.dataset.project) {
+        const id = el.dataset.project;
+        el.setAttribute(
+          "aria-expanded",
+          String(id === state.paper && shownCard),
+        );
+        const label = el.querySelector(".node-label");
+        label.textContent = l(CAT[id].short);
+        const link =
+          state.paper &&
+          neighbours(state.paper).find((r) => r.a === id || r.b === id);
+        if (link && id !== state.paper) {
+          const caption = document.createElement("small");
+          caption.className = "relation-label";
+          caption.textContent = l(link.label);
+          label.append(caption);
+        }
+      }
+    }
+    updateCard();
+    relayout(animate);
+  }
+  function applyRoute() {
+    renderedLocation = location.href;
+    const previous = state;
+    state = parseRoute();
+    shownCard = !!state.paper;
+    render(!!previous);
+    const focus = document.activeElement;
+    if (!focus || focus === document.body || focus.closest("[hidden]")) {
+      const node =
+        state.view === "fields"
+          ? controls.get(
+              state.paper
+                ? paperKey(state.paper)
+                : state.field
+                  ? fieldKey(state.field)
+                  : "core",
+            )
+          : $("#theory-inner");
+      if (previous && node) node.focus({ preventScroll: true });
+    }
+  }
+  function translate() {
     document.documentElement.lang = lang ? "en" : "zh-Hans";
     document.title = t("title") + " · Cultural Constellations";
     document
@@ -522,118 +744,112 @@
       .forEach((el) => (el.textContent = t(el.dataset.i)));
     $("#zh").setAttribute("aria-pressed", String(!lang));
     $("#en").setAttribute("aria-pressed", String(!!lang));
-    map.setAttribute("aria-label", t("mapName"));
-    const ids = located.flatMap((d) => d.projects);
-    map.innerHTML =
-      defs +
-      sky() +
-      ids.map(edgeMarkup).join("") +
-      foundationMarkup() +
-      located.map(fieldMarkup).join("") +
-      ids.map(projectMarkup).join("");
-    updateViewBox();
-    showPanel();
-    window.renderTheory(lang);
+    stage.setAttribute("aria-label", t("graph"));
+    map.setAttribute("aria-label", t("graph"));
+    createNodes();
+    render(false);
   }
   function setLanguage(n) {
+    if (lang === n) return;
     lang = n;
     try {
       localStorage.setItem("atlas-language", lang ? "en" : "zh");
     } catch {}
-    render();
+    const u = new URL(location.href);
+    u.searchParams.set("lang", lang ? "en" : "zh");
+    history.replaceState(null, "", u);
+    renderedLocation = location.href;
+    if (state.view !== "fields") {
+      const selected = $("#theory-inner .fw-control[aria-pressed=true]");
+      if (selected) state.index = Number(selected.dataset.id);
+    }
+    translate();
   }
   $("#zh").onclick = () => setLanguage(0);
   $("#en").onclick = () => setLanguage(1);
-  $("#zoom").onclick = () => {
-    plot.classList.toggle("expanded");
-    updateViewBox();
-    pinned = null;
-    hideTip();
+  $("#all-fields").onclick = () => goField(null);
+  $("#enter-theory").onclick = () => window.exploreView("anthropology", 1);
+  $("#trail").onclick = (e) => {
+    const b = e.target.closest("[data-route]");
+    if (b) navigate(b.dataset.route);
   };
-  window
-    .matchMedia("(max-width:600px)")
-    .addEventListener("change", updateViewBox);
-  map.addEventListener("pointerover", (e) => {
-    const el = e.target.closest(".edge");
-    if (el && e.pointerType !== "touch") showTip(el);
-  });
-  map.addEventListener("pointerout", (e) => {
-    const el = e.target.closest(".edge");
-    if (el && !el.contains(e.relatedTarget))
-      pinned ? showTip(pinned) : hideTip();
-  });
-  map.addEventListener("focusin", (e) => {
-    const el = e.target.closest(".edge");
-    if (el) showTip(el);
-  });
-  map.addEventListener("focusout", (e) => {
-    if (e.target.closest(".edge")) pinned ? showTip(pinned) : hideTip();
-  });
-  function activate(el) {
-    if (el.dataset.edge) {
-      if (pinned === el) {
-        pinned = null;
-        hideTip();
-      } else {
-        pinned = el;
-        showTip(el);
-      }
+  card.onclick = (e) => {
+    const link = e.target.closest('a[href^="#theory/"]');
+    if (link && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+      e.preventDefault();
+      navigate(link.getAttribute("href"));
       return;
     }
-    if (el.dataset.domain) select("domain", el.dataset.domain, true);
-    if (el.dataset.project) select("project", el.dataset.project, true);
-    if (el.hasAttribute("data-foundation")) select("foundation", null, true);
-  }
-  map.addEventListener("click", (e) => {
-    const el = e.target.closest('[role="button"]');
-    if (el) activate(el);
-    else {
-      pinned = null;
-      hideTip();
+    if (e.target.closest(".card-close")) {
+      shownCard = false;
+      updateCard();
+      relayout(false);
+      controls.get(paperKey(state.paper)).focus({ preventScroll: true });
     }
+  };
+  const edgeAt = (el) => {
+    const g = el.closest(".edge");
+    return g ? edges[Number(g.dataset.idx)] : null;
+  };
+  map.addEventListener("pointerover", (e) => {
+    const edge = edgeAt(e.target);
+    if (edge && e.pointerType !== "touch") showTip(edge);
   });
+  map.addEventListener("pointerout", (e) => {
+    const edge = edgeAt(e.target);
+    if (edge && !edge.el.contains(e.relatedTarget))
+      pinnedEdge ? showTip(pinnedEdge) : clearTip();
+  });
+  map.addEventListener("focusin", (e) => showTip(edgeAt(e.target)));
+  map.addEventListener("focusout", () =>
+    pinnedEdge ? showTip(pinnedEdge) : clearTip(),
+  );
+  function toggleEdge(e) {
+    if (!e) return;
+    pinnedEdge = pinnedEdge === e ? null : e;
+    pinnedEdge ? showTip(pinnedEdge) : clearTip();
+  }
+  map.addEventListener("click", (e) => toggleEdge(edgeAt(e.target)));
   map.addEventListener("keydown", (e) => {
-    if (["Enter", " "].includes(e.key) && e.target.matches('[role="button"]')) {
+    if ([" ", "Enter"].includes(e.key)) {
       e.preventDefault();
-      activate(e.target);
+      toggleEdge(edgeAt(e.target));
     }
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      pinned = null;
-      hideTip();
+    if (e.key !== "Escape" || state.view !== "fields") return;
+    if (!tip.hidden) {
+      pinnedEdge = null;
+      clearTip();
+    } else if (state.paper && shownCard) {
+      shownCard = false;
+      updateCard();
+      relayout(false);
+      controls.get(paperKey(state.paper)).focus({ preventScroll: true });
+    } else if (state.field) goField(state.paper ? state.field : null);
+  });
+  stage.addEventListener("click", (e) => {
+    if (!e.target.closest(".edge")) {
+      pinnedEdge = null;
+      clearTip();
     }
   });
-  panel.addEventListener("click", (e) => {
-    const route = e.target.closest("[data-view]");
-    if (route) {
-      document
-        .querySelector(
-          '.ht-panel[data-group="0"] [data-index="' + route.dataset.view + '"]',
-        )
-        .click();
-      document
-        .querySelector(
-          '.ht-panel[data-group="1"] [data-index="' +
-            route.dataset.activity +
-            '"]',
-        )
-        .click();
-      return;
+  function restoreHistory() {
+    if (renderedLocation === location.href) return;
+    applyRoute();
+  }
+  window.addEventListener("popstate", restoreHistory);
+  window.addEventListener("hashchange", restoreHistory);
+  new ResizeObserver(() => {
+    if (state?.view === "fields" && (stage.clientWidth !== drawnWidth || stage.clientHeight !== drawnHeight)) {
+      clearTip();
+      relayout(false);
     }
-    const b = e.target.closest("button");
-    if (!b) return;
-    if (b.dataset.open) {
-      select("project", b.dataset.open);
-      panel.querySelector(".crumb").focus({ preventScroll: true });
-    }
-    if (b.dataset.parent) {
-      const old = selection.id;
-      select("domain", b.dataset.parent);
-      panel
-        .querySelector('[data-open="' + old + '"]')
-        .focus({ preventScroll: true });
-    }
+  }).observe(stage);
+  reduced.addEventListener("change", () => {
+    if (state?.view === "fields") relayout(false);
   });
-  render();
+  state = parseRoute();
+  shownCard = !!state.paper;
+  translate();
 })();
