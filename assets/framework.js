@@ -37,6 +37,12 @@
       "Golan et al. (2020)",
       "https://pmc.ncbi.nlm.nih.gov/articles/PMC7703564/",
     ],
+    gell: ["Gell (1998)", "https://academic.oup.com/book/47329"],
+    perez: ["Perez et al. (2025)", "https://arxiv.org/abs/2407.04503"],
+    shumailov: [
+      "Shumailov et al. (2024)",
+      "https://doi.org/10.1038/s41586-024-07566-y",
+    ],
   };
 
   const disciplines = [
@@ -55,6 +61,11 @@
         "A bowl may be used as an offering, for serving a guest or for display. Compare how people name it, who may handle it and what participants say about those conventions.",
       ],
       ref: "geertz",
+      role: [
+        "把 AI 当作一个新的“群体”来观察，把它的作品当藏品来研究：意义之网与行动者网络是整个课题的起点。",
+        "Observe AI as a new group and study its works as museum objects: webs of meaning and actor-networks are where the project begins.",
+      ],
+      fields: ["museum", "rights"],
     },
     {
       name: ["哲学", "Philosophy"],
@@ -71,6 +82,11 @@
         "A painted copy may be visually indistinguishable from an original. Comparing their surfaces establishes resemblance. Production and provenance records bear on whether they share a maker.",
       ],
       ref: "goodman",
+      role: [
+        "追问什么才算“理解”、什么才算“创造”：书法里分清“再现类型”与“回应具体”，版权里追问一件作品凭什么是它自己。",
+        "Ask what counts as understanding and as creating: in calligraphy, tell reproducing a type from answering a particular work; in provenance, ask what makes a work itself.",
+      ],
+      fields: ["calligraphy", "rights"],
     },
     {
       name: ["语言学", "Linguistics"],
@@ -87,6 +103,11 @@
         "A kinship term may address a family member or a neighbour. Ask speakers familiar with both contexts to compare translations and explain the relation each one implies.",
       ],
       ref: "clark",
+      role: [
+        "每种语言“必须说出”的东西不同：称谓、礼貌、时态。翻译时，哪些必须保留？",
+        "Each language obliges its speakers to say different things: forms of address, politeness, tense. Which of them must a translation keep?",
+      ],
+      fields: ["translation"],
     },
     {
       name: ["心理学", "Psychology"],
@@ -103,6 +124,11 @@
         "Make vessel shape and ornament favour different categories. New objects with conflicting cues test whether a shape-weighted model predicts which individual examples observers confuse.",
       ],
       ref: "nosofsky",
+      role: [
+        "人对一个对象了解不够时，会用“类别”去补；专家评分与人类演奏，是衡量 AI 的那把尺。",
+        "When people know too little about an object they fill the gap with its category; expert ratings and human performances are the yardstick for AI.",
+      ],
+      fields: ["museum", "music"],
     },
     {
       name: ["神经科学", "Neuroscience"],
@@ -119,6 +145,11 @@
         "In string playing, delayed sound feedback could reveal when a player begins correcting the movement. A claim about a particular circuit would also need neural measurements or intervention.",
       ],
       ref: "wolpert",
+      role: [
+        "意图怎样变成动作：毛笔的起、行、收，琵琶的触弦。",
+        "How intention becomes movement: the start, travel and finish of a brushstroke, the touch on a pipa string.",
+      ],
+      fields: ["calligraphy", "music"],
     },
     {
       name: ["计算机科学", "Computer science"],
@@ -135,6 +166,64 @@
         "An object-retrieval system could encode outlines or catalogue text. Swapping the captions while keeping the photographs fixed tests which representation drives its choices.",
       ],
       ref: "marr",
+      role: [
+        "模型、记忆与规划、评测基准：把以上问题变成可以测量的实验。",
+        "Models, memory and planning, and benchmarks turn these questions into experiments that can be measured.",
+      ],
+      fields: ["museum", "translation", "calligraphy", "music", "rights"],
+    },
+  ];
+  // The position the five fields argue from.
+  const stance = [
+    {
+      name: ["新的描述者", "A new describer"],
+      title: [
+        "模型保留了文化的类型，丢失了具体的这一件",
+        "Models keep the type of a culture and lose the particular object",
+      ],
+      account: [
+        "视觉语言模型的描述正在进入藏品目录、检索结果与下一代模型的训练数据。Pothen 让模型仅凭照片推断藏品的名称、文化、时期、产地与作者，五项同时正确的只有 2% 到 8%；Polytropos 把描述还原成图像，重建图更常被识别为所记录的文化，却只有 0.49% 能被认出是这一件。",
+        "Descriptions written by vision-language models are entering catalogues, search results and the training data of the next models. In Pothen, models inferring five catalogue fields from a photograph got all five right for only 2% to 8% of objects. In Polytropos, images rebuilt from model descriptions were placed in the recorded culture more often than the original photographs, yet only 0.49% could be identified as that object.",
+      ],
+      evidence: [
+        "对文化的书写往往把具体之物写成类型；描述者对个体所知少于对其类别时，会用类别填补空缺。",
+        "Writing about culture tends to turn particular things into types; when a describer knows less about an individual than about its category, the category fills the gap.",
+      ],
+      fields: ["museum"],
+    },
+    {
+      name: ["新的创作者", "A new creator"],
+      title: [
+        "只掌握类型的描述者，在转述与创作时会做什么？",
+        "What does a describer that knows only types do when it retells and creates?",
+      ],
+      account: [
+        "三个方向各回答循环中的一环。翻译：AI 在文化之间转述时，保留的是具体的话语，还是它所属的类型？书法：AI 写字时，是在再现已有文化的类型，还是回应这首诗、这件作品？音乐：AI 能否把一首琵琶曲约定的情感与意象，变成听得到的演奏？",
+        "Three directions each answer one step of the loop. Translation: when AI carries words between cultures, does it keep the particular utterance or only its type? Calligraphy: when AI writes, does it reproduce a type or answer this poem and this work? Music: can AI turn the feeling and imagery a pipa piece carries into a performance we can hear?",
+      ],
+      evidence: [
+        "盖尔指出，艺术品是行动的痕迹，观者据此推断制作者的意图。AI 的书写与演奏因此也能像藏品一样，被追问由谁、在什么场合、以什么方式做成。",
+        "Gell treats an artwork as the trace of an action from which viewers infer intention. AI's writing and playing can therefore be questioned like museum objects: who made it, on what occasion, and how.",
+      ],
+      ref: "gell",
+      fields: ["translation", "calligraphy", "music"],
+    },
+    {
+      name: ["持续认知演化", "Continuing co-evolution"],
+      title: [
+        "AI 的产出回到人类文化与下一代模型",
+        "AI's output returns to human culture and the next models",
+      ],
+      account: [
+        "AI 的描述、译文与作品经引用、学习与再训练，回到人类文化与下一代模型之中；模型偏好的典型形式会在一轮轮复用中被放大。这一循环里，人类文化与 AI 认知共同演化。",
+        "AI's descriptions, translations and works are cited, learned from and trained on, returning to human culture and to the next models; the typical forms a model prefers are amplified with each round of reuse. Within this loop, human culture and AI cognition evolve together.",
+      ],
+      evidence: [
+        "在多轮传递中，模型的输出会被吸引到特定的“文化吸引子”；用模型生成的数据递归训练，会让原始分布的尾部逐渐消失。",
+        "Across chains of transmission, model outputs drift towards cultural attractors; training recursively on generated data makes the tails of the original distribution disappear.",
+      ],
+      ref: "perez",
+      fields: ["museum", "translation", "calligraphy", "music", "rights"],
     },
   ];
   const processes = [
@@ -151,6 +240,7 @@
       ],
     },
     {
+      fields: ["museum"],
       name: ["理解", "Understand"],
       title: ["从表达中建构意义", "Construct meaning from an expression"],
       account: [
@@ -193,6 +283,7 @@
       ],
     },
     {
+      fields: ["translation", "music"],
       name: ["评价", "Evaluate"],
       title: ["按明示的标准作判断", "Judge against an explicit criterion"],
       account: [
@@ -205,6 +296,7 @@
       ],
     },
     {
+      fields: ["calligraphy", "music"],
       name: ["创造", "Create"],
       title: ["组织材料以形成新的整体", "Organise materials into a new whole"],
       account: [
@@ -291,9 +383,23 @@
     [132, 96],
   ];
   const screens = {
+    stance: {
+      selection: null,
+      title: [
+        "AI 正在成为编织意义之网的行动者",
+        "AI is becoming an actor in the web of meaning",
+      ],
+      intro: [
+        "格尔茨说，人编织意义之网，文化就是这张网。拉图尔补充，非人的行动者也在编织这张网。AI 生成的描述、译文与作品一经被引用、临摹、再训练，就成为网中的节点，参与重组人类理解文化的关系。",
+        "Geertz: people spin webs of significance, and culture is those webs. Latour: non-human actors weave them too. Once AI's descriptions, translations and works are cited, copied and trained on, they become nodes in the web and reshape how people understand culture.",
+      ],
+    },
     anthropology: {
       selection: null,
-      title: words.heading,
+      title: [
+        "从意义之网到行动者网络",
+        "From webs of meaning to actor-networks",
+      ],
       intro: [
         "作品的意义从哪里来，又如何在流转中改变？选择一条理论路径。",
         "Where does a work’s meaning come from, and how does it travel? Choose a line of inquiry.",
@@ -311,16 +417,16 @@
       selection: null,
       title: words.processes,
       intro: [
-        "修订版布鲁姆分类区分知识类型与认知操作。选择一层，查看它界定的操作。",
-        "The revised taxonomy distinguishes types of knowledge from operations on knowledge. Select a tier to examine an operation.",
+        "修订版布鲁姆分类区分知识类型与认知操作。本课题把评测推向上端：评价意义是否被保留，再到创作本身。选择一层，查看它界定的操作。",
+        "The revised taxonomy distinguishes types of knowledge from operations on knowledge. This project pushes evaluation towards the top: judging whether meaning survives, and then creating. Select a tier to examine an operation.",
       ],
     },
     ai: {
       selection: null,
-      title: words.aiTitle,
+      title: ["同源共生，双向启发", "A shared origin, two directions"],
       intro: [
-        "AI 贯穿五个领域，既是研究对象，也是研究方法。选择一个方向。",
-        "Across the five fields, AI is both a subject of study and a research method. Choose a direction.",
+        "20 世纪 50 年代的认知革命中，心理学、认知科学与人工智能几乎同时起步，从此互相借力。AI 开始生产文化之后，它产出了什么、保留了什么、改变了什么，需要人类学、语言学与艺术的眼光来回答。AI + 人文不是跨界，而是回到认知革命的起点。",
+        "Psychology, cognitive science and AI began almost together in the cognitive revolution of the 1950s and have borrowed from each other ever since. Now that AI produces culture, what it makes, keeps and changes needs the eyes of anthropology, linguistics and the arts. AI and the humanities are not crossing a border; they are returning to where the cognitive revolution began.",
       ],
     },
   };
@@ -333,6 +439,7 @@
           "How does an act become intelligible?",
         ],
         account: words.geertzText,
+        fields: ["museum", "calligraphy"],
         evidence: [
           "格尔茨借眨眼说明，眼睑一动可能是抽动、暗号，也可能是在模仿别人的暗号。对物品作厚描同样要问，当事人如何区分一次供奉、一次礼赠与一次交易。",
           "Geertz’s wink can be a twitch, a signal or a parody of someone else’s signal. A thick description of an object’s movement likewise asks how participants distinguish an offering, a gift and a sale.",
@@ -346,6 +453,7 @@
           "How do relations give actors the capacity to act?",
         ],
         account: words.latourText,
+        fields: ["translation", "rights"],
         evidence: [
           "口述来历被编目字段压缩为产地，检索系统再按产地分组。对照口述记录、表格和检索结果，可以辨认哪一环改变了后续行动。描述软件的作用之后，仍须分别查证人的意图、决定和责任。",
           "An accession form can compress an oral history into one place of origin, which software then uses to group objects. Compare testimony, records and search results to locate the transformation. Describing the software’s contribution leaves intention and responsibility as distinct questions.",
@@ -353,6 +461,7 @@
         ref: "latour",
       },
     ],
+    stance,
     ai: paths.map((p) => ({
       name: [p.from[0] + " → " + p.to[0], p.from[1] + " → " + p.to[1]],
       title: p.label,
@@ -364,12 +473,14 @@
     processes,
   };
   const modes = {
+    stance: ["立场", "Stance"],
     anthropology: ["人类学", "Anthropology"],
-    disciplines: ["六个学科", "Six disciplines"],
-    processes: ["六类认知过程", "Six processes"],
-    ai: ["AI ↔ 认知科学", "AI ↔ Cognition"],
+    disciplines: ["六学科", "Disciplines"],
+    processes: ["六层级", "Levels"],
+    ai: ["同源共生", "Shared origin"],
   };
   const starts = {
+    stance: [0, ["新的描述者看到了什么？", "What does a new describer see?"]],
     anthropology: [
       0,
       ["同一次眨眼可以有几种意义？", "When does a blink become a wink?"],
@@ -397,6 +508,19 @@
     ],
   };
   const connections = {
+    stance: [
+      [
+        "anthropology",
+        1,
+        ["从行动者网络理论读起", "Start from actor-network theory"],
+      ],
+      [
+        "disciplines",
+        2,
+        ["语言学怎样看转述", "How linguistics reads a retelling"],
+      ],
+      ["processes", 5, ["从评价走向创造", "From evaluating to creating"]],
+    ],
     anthropology: [
       [
         "disciplines",
@@ -507,6 +631,7 @@
     diting: ["谛听 · 文学翻译评测", "DITING · Literary translation"],
   };
   const studyIds = {
+    stance: ["polytropos", "diting", null],
     anthropology: ["pothen", "polytropos"],
     disciplines: ["pothen", "pothen", "diting", "pothen", null, "polytropos"],
     processes: ["pothen", "diting", null, "polytropos", "diting", null],
@@ -636,10 +761,19 @@
             ["格尔茨", "Geertz"],
             ["拉图尔", "Latour"],
           ]
-        : [
-            [paths[0].label[0], paths[0].label[1]],
-            [paths[1].label[0], paths[1].label[1]],
-          ];
+        : view === "stance"
+          ? [
+              [
+                "前序工作 Pothen · Polytropos",
+                "Prior work: Pothen · Polytropos",
+              ],
+              ["翻译 · 书法 · 音乐", "Translation · calligraphy · music"],
+              ["文化与认知的循环", "A loop of culture and cognition"],
+            ]
+          : [
+              [paths[0].label[0], paths[0].label[1]],
+              [paths[1].label[0], paths[1].label[1]],
+            ];
     const options = supporting[view]
       .map(
         (row, i) =>
@@ -681,6 +815,10 @@
     const deeper = l ? "Theory and source" : "理论脉络与原典";
     let context = "";
     let commonRef = "";
+    if (view === "stance")
+      context = l
+        ? "The project studies this new group through two kinds of material: AI's descriptions of cultural heritage, read as its understanding and expression, and AI's own creations, treated as museum objects."
+        : "本课题以两类材料研究这个新群体：以 AI 对文化遗产的描述作为它的理解与表达，以 AI 的创作作为藏品来研究。";
     if (view === "anthropology")
       context = l
         ? "Anthropology grounds all five fields and also contributes one disciplinary perspective in the cognitive science hexagon."
@@ -696,12 +834,34 @@
       commonRef = "bloom";
     }
     if (view === "ai" && index === 0) commonRef = "marr";
+    if (view === "stance" && index === 2) commonRef = "shumailov";
+    const role = item.role
+      ? '<p class="fw-role"><strong>' +
+        (l ? "In this project" : "在本课题中") +
+        "</strong>" +
+        item.role[l] +
+        "</p>"
+      : "";
+    const reach = (item.fields || [])
+      .filter(() => view !== "disciplines" || index !== 5)
+      .map(
+        (id) =>
+          '<button type="button" class="fw-field" data-field="' +
+          id +
+          '">' +
+          (window.fieldName?.(id, l) || id) +
+          "</button>",
+      )
+      .join("");
     return (
       '<span class="fw-eyebrow">' +
       item.name[l] +
       "</span><h4>" +
       item.title[l] +
-      "</h4><p>" +
+      "</h4>" +
+      role +
+      (reach ? '<div class="fw-reach">' + reach + "</div>" : "") +
+      "<p>" +
       item.account[l] +
       "</p><details" +
       (open ? " open" : "") +
@@ -739,9 +899,25 @@
     );
     root.querySelector(".fw-nav").innerHTML = nav(view, l, selection);
   }
+  // Short names let the map name a theory item beside a constellation.
+  window.theoryName = (view, index, lang) => {
+    const l = lang === 1 ? 1 : 0;
+    if (view === "anthropology")
+      return [
+        ["格尔茨", "Geertz"],
+        ["拉图尔", "Latour"],
+      ][index]?.[l];
+    const row = supporting[view]?.[index];
+    return row ? row.name[l] : modes[view]?.[l];
+  };
+  window.theoryViews = Object.keys(modes);
+  window.theorySelected = (view) => screens[view]?.selection ?? null;
+  // The constellations an item speaks to, so the map can light them.
+  window.theoryFields = (view, index) =>
+    Number.isInteger(index) ? supporting[view]?.[index]?.fields || [] : [];
   window.renderTheory = function renderTheory(
     lang,
-    view = "anthropology",
+    view = "stance",
     selection = null,
   ) {
     const root = document.getElementById("theory-inner");
@@ -774,6 +950,10 @@
         ? "The tiers organise tasks by broad complexity. They can overlap and recur in any order. Neural mechanisms need separate evidence."
         : "层级按任务的大致复杂度排列，可以重叠，也可往返。神经机制需要独立证据。";
     if (view === "ai") scope = words.criteria[l];
+    if (view === "stance")
+      scope = l
+        ? "The five fields unfold along one loop: understand and describe, retell, create, meet people, then return and attribution."
+        : "五个领域沿同一条循环展开：理解与描述、转述、创作、与人互动，再回流与归属。";
     const graphics =
       view === "disciplines"
         ? hexagon(l)
@@ -815,6 +995,7 @@
       });
     }
     function choose(idx, focus, revealFocus = focus) {
+      window.onTheorySelect?.(view, idx);
       if (idx !== state.selection) state.open = false;
       else
         state.open = root.querySelector(".fw-reading details")?.open ?? false;
@@ -848,7 +1029,19 @@
         }
       }
     }
+    const pointed = (event, on) => {
+      const control = event.target.closest(".fw-control");
+      if (control)
+        window.onTheoryHover?.(view, on ? Number(control.dataset.id) : null);
+    };
+    shell.addEventListener("pointerover", (event) => pointed(event, true));
+    shell.addEventListener("pointerout", (event) => pointed(event, false));
     shell.addEventListener("click", (event) => {
+      const field = event.target.closest("[data-field]");
+      if (field) {
+        window.exploreField?.(field.dataset.field);
+        return;
+      }
       const origin = event.target.closest(
         ".fw-control,[data-start],[data-paper],button[data-view]",
       );

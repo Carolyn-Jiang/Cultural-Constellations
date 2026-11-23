@@ -11,17 +11,17 @@
     </title>
     <meta
       name="description"
-      content="Explore how AI interprets and reshapes culture in museum objects, copyright and provenance, calligraphy, music, and translation. A bilingual exploration of cultural interpretation."
+      content="How does AI interpret and reshape culture? Five constellations of research (museum objects, translation, calligraphy, music, copyright and provenance) on one culture loop, read through actor-network theory and cognitive science. Bilingual."
     />
     <link rel="icon" href="assets/compass.svg" />
-    <link rel="stylesheet" href="assets/atlas.css?v=6" />
-    <link rel="stylesheet" href="assets/night-sky.css?v=5" />
-    <link rel="stylesheet" href="assets/framework.css?v=4" />
-    <link rel="stylesheet" href="assets/paper-index.css?v=4" />
+    <link rel="stylesheet" href="assets/atlas.css?v=7" />
+    <link rel="stylesheet" href="assets/night-sky.css?v=6" />
+    <link rel="stylesheet" href="assets/framework.css?v=5" />
+    <link rel="stylesheet" href="assets/paper-index.css?v=5" />
   </head>
   <body>
     <header class="head">
-      <div class="headin wrap">
+      <div class="headin">
         <a class="brand" href="#atlas" aria-label="AI + Humanity"
           ><svg viewBox="0 0 40 40" aria-hidden="true">
             <circle
@@ -43,15 +43,11 @@
         <nav id="explore-nav" class="explore-nav" aria-label="Explore">
           <a href="#atlas" data-mode="fields" data-i="fieldsNav"></a>
           <a href="#papers" data-mode="papers" data-i="papersNav"></a>
-          <a
-            href="#theory/anthropology"
-            data-mode="framework"
-            data-i="theoryNav"
-          ></a>
+          <a href="#theory/stance" data-mode="framework" data-i="theoryNav"></a>
         </nav>
         <div class="langs" role="group" aria-label="Language">
-          <button id="zh" lang="zh-Hans">中文</button
-          ><button id="en" lang="en">EN</button>
+          <button id="zh" type="button" lang="zh-Hans">中文</button
+          ><button id="en" type="button" lang="en">EN</button>
         </div>
       </div>
     </header>
@@ -82,7 +78,6 @@
               <stop offset="1" stop-color="#c89144" />
             </linearGradient>
           </defs>
-          <path id="pentagram" class="outline" aria-hidden="true" />
           <g id="edges"></g>
           <path
             id="callout-line"
@@ -94,20 +89,18 @@
         <div id="nodes"></div>
         <nav id="portals" aria-label="Connected papers"></nav>
         <div id="tip" role="tooltip" class="edgeinfo" hidden></div>
+        <div
+          id="field-caption"
+          class="field-caption"
+          aria-live="polite"
+          hidden
+        ></div>
         <section
           id="node-card"
           class="node-card"
           aria-labelledby="card-title"
           hidden
         ></section>
-        <section id="theory" class="theory-float" hidden>
-          <button
-            type="button"
-            class="float-close"
-            data-close="theory"
-          ></button>
-          <div id="theory-inner" tabindex="-1"></div>
-        </section>
         <div id="index-drawer" hidden>
           <div class="drawer-heading">
             <h2 data-i="papersNav"></h2>
@@ -119,20 +112,33 @@
           </div>
           <div id="paper-index" tabindex="-1"></div>
         </div>
-        <p
-          id="field-caption"
-          class="field-caption"
-          aria-live="polite"
-          hidden
-        ></p>
         <div class="scrim scrim-top" aria-hidden="true"></div>
         <div class="scrim scrim-bottom" aria-hidden="true"></div>
       </div>
-      <header id="mast" class="sky-intro" aria-labelledby="site-title"></header>
+      <aside id="foundation" class="rail" aria-labelledby="site-title">
+        <button
+          type="button"
+          id="rail-handle"
+          class="rail-handle"
+          aria-controls="rail-scroll"
+          aria-expanded="false"
+        ></button>
+        <div id="rail-scroll" class="rail-scroll theory-float">
+          <header id="rail-head" class="rail-head"></header>
+          <section class="rail-theory" aria-labelledby="theory-heading">
+            <h2
+              id="theory-heading"
+              class="rail-heading"
+              data-i="foundation"
+            ></h2>
+            <div id="theory-inner" tabindex="-1"></div>
+          </section>
+        </div>
+      </aside>
       <nav
-        id="guided-route"
-        class="guided-route sky-tour"
-        aria-label="Reading route"
+        id="loop-tour"
+        class="sky-tour"
+        aria-label="Culture loop"
         hidden
       ></nav>
       <div class="sky-controls">
@@ -155,12 +161,11 @@
         </div>
       </div>
     </main>
-    <script src="assets/night-sky.js?v=3"></script>
-    <script src="assets/catalog.js?v=3"></script>
-    <script src="assets/relations.js?v=3"></script>
-    <script src="assets/framework.js?v=4"></script>
-    <script src="assets/paper-index.js?v=4"></script>
-    <script src="assets/spatial-layout.js?v=5"></script>
-    <script src="assets/atlas.js?v=6"></script>
+    <script src="assets/night-sky.js?v=4"></script>
+    <script src="assets/catalog.js?v=4"></script>
+    <script src="assets/relations.js?v=4"></script>
+    <script src="assets/framework.js?v=5"></script>
+    <script src="assets/paper-index.js?v=5"></script>
+    <script src="assets/atlas.js?v=7"></script>
   </body>
 </html>

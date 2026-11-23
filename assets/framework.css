@@ -754,3 +754,102 @@
     margin-top: 0.2rem;
   }
 }
+
+/* ── In the foundation rail ─────────────────────────────────────────────
+   The theory sits beside the sky as its own column: tabs stay in reach
+   while reading, and each item names the constellations it speaks to. */
+.rail #theory-inner .fw {
+  --fw-sky: #0c131c;
+  padding: 0 clamp(22px, 2.2vw, 34px) 1.2rem;
+}
+.rail .fw-modes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 0.2rem;
+  margin: 0 calc(-1 * clamp(22px, 2.2vw, 34px)) 0.9rem;
+  padding: 0 clamp(8px, 1.1vw, 18px);
+  background: #0c131c;
+  box-shadow: 0 10px 14px -12px #000;
+}
+.rail .fw-mode {
+  flex: 0 0 auto;
+  min-height: 42px;
+  padding: 0.25rem 0.32rem;
+  font-size: 0.86rem;
+  white-space: nowrap;
+}
+.rail .fw[lang="en"] .fw-mode {
+  padding-inline: 0.26rem;
+  font-size: 0.8rem;
+}
+@container theory-note (max-width: 350px) {
+  .rail .fw-modes {
+    display: flex;
+    justify-content: flex-start;
+    column-gap: 0.6rem;
+  }
+  .rail .fw-mode {
+    text-align: center;
+  }
+}
+.rail .fw-header h2 {
+  font-size: clamp(1.3rem, 6.4cqi, 1.7rem);
+}
+.rail .fw-visual .fw-hex {
+  max-width: 21rem;
+}
+.rail .fw-visual .fw-pyramid {
+  max-width: 17.5rem;
+}
+.fw-role {
+  margin: 0.15rem 0 0.7rem;
+  padding: 0.5rem 0 0.55rem 0.8rem;
+  border-left: 2px solid var(--fw-gold);
+  background: linear-gradient(90deg, #d5b4761a, #d5b47600);
+  color: #ece4d0;
+  font: 0.95rem/1.6 var(--sans);
+}
+.fw-role strong {
+  display: block;
+  margin-bottom: 0.1rem;
+  color: var(--fw-gold);
+  font: 600 0.74rem/1.4 var(--sans);
+  letter-spacing: 0.06em;
+}
+:lang(zh) .fw-role {
+  line-height: 1.75;
+}
+.fw-reach {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.45rem;
+  margin: 0 0 0.75rem;
+}
+.fw-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 32px;
+  padding: 0.2rem 0.7rem;
+  border: 1px solid #a5957799;
+  border-radius: 999px;
+  color: #f1dcae;
+  font: 500 0.82rem/1.2 var(--sans);
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+.fw-field::after {
+  content: "→";
+  color: var(--fw-gold);
+}
+.fw-field:is(:hover, :focus-visible) {
+  border-color: var(--fw-bright);
+  background: #d5b4761c;
+  color: var(--fw-bright);
+}
+.fw-field:focus-visible {
+  outline: 2px solid var(--fw-bright);
+  outline-offset: 2px;
+}

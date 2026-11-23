@@ -1,189 +1,243 @@
 (() => {
+  "use strict";
+
+  // ── What the sky holds ─────────────────────────────────────────────────
+  // Five constellations sit on the culture loop set out in the proposal:
+  // understand and describe → retell → create → meet people → return.
   const fields = [
     {
       id: "museum",
       art: "athena",
+      stage: 1,
       name: ["博物馆藏品", "Museum objects"],
       guardian: ["雅典娜与猫头鹰", "Athena & the owl"],
+      step: ["理解与描述", "Understand & describe"],
+      question: [
+        "模型看到的是这一件藏品，还是它所属的类型？",
+        "Does a model see this object, or only the type it belongs to?",
+      ],
+      lenses: ["disciplines/0", "disciplines/3", "processes/1"],
       papers: ["pothen", "polytropos"],
     },
     {
-      id: "rights",
-      art: "themis",
-      name: ["版权与来源归属", "Copyright & provenance"],
-      guardian: ["忒弥斯与天平", "Themis & the scales"],
-      papers: ["motif", "provenance"],
+      id: "translation",
+      art: "diting",
+      stage: 2,
+      name: ["翻译", "Translation"],
+      guardian: ["谛听", "Dìtīng"],
+      step: ["转述", "Retell"],
+      question: [
+        "AI 在文化之间转述时，保留的是具体的话语，还是它所属的类型？以谁的语言划分为准？",
+        "When AI carries words between cultures, does it keep the particular utterance or only its type? Whose language draws the lines?",
+      ],
+      lenses: ["disciplines/2", "anthropology/1", "processes/4"],
+      papers: ["diting", "revision", "languages"],
     },
     {
       id: "calligraphy",
       art: "fuxi",
+      stage: 3,
       name: ["书法", "Calligraphy"],
       guardian: ["负屃", "Fùxì"],
+      step: ["创作", "Create"],
+      question: [
+        "AI 写字时，是在再现已有文化的类型，还是回应这首诗、这件作品，产生新的文化？",
+        "When AI writes, does it reproduce a cultural type, or answer this poem and this work and make new culture?",
+      ],
+      lenses: ["disciplines/1", "disciplines/4", "processes/5"],
       papers: ["composition", "handwriting"],
     },
     {
       id: "music",
       art: "qiuniu",
+      stage: 4,
       name: ["音乐", "Music"],
       guardian: ["囚牛", "Qiúniú"],
+      step: ["与人互动", "Meet the listener"],
+      question: [
+        "AI 能否把一首琵琶曲约定的情感与意象，变成听得到的演奏，并与人类演奏放在同一尺度上评价？",
+        "Can AI turn the feeling and imagery a pipa piece carries into a performance we can hear, judged on the same scale as a human player?",
+      ],
+      lenses: ["disciplines/3", "disciplines/4", "processes/4"],
       papers: ["qiuniu", "interpretation", "instrumental"],
     },
     {
-      id: "translation",
-      art: "diting",
-      name: ["翻译", "Translation"],
-      guardian: ["谛听", "Dìtīng"],
-      papers: ["diting", "revision", "languages"],
+      id: "rights",
+      art: "themis",
+      stage: 5,
+      name: ["版权与来源归属", "Copyright & provenance"],
+      guardian: ["忒弥斯与天平", "Themis & the scales"],
+      step: ["回流与归属", "Return & attribution"],
+      question: [
+        "一件作品被复制、引用、再训练之后，怎样追溯它由谁、从何而来？",
+        "Once a work is copied, cited and trained on, how can we trace who made it and where it came from?",
+      ],
+      lenses: ["disciplines/1", "anthropology/1", "disciplines/0"],
+      papers: ["motif", "provenance"],
     },
   ];
-  const fieldById = Object.fromEntries(fields.map((d) => [d.id, d]));
-  const owner = Object.fromEntries(
-    fields.flatMap((d) => d.papers.map((p) => [p, d])),
-  );
-  const question = {
-    museum: [
-      "一张照片能告诉我们一件藏品来自哪里吗？",
-      "What can one photograph tell us about an object’s origins?",
-    ],
-    rights: [
-      "一件作品不断被复制，怎样追溯它的来源？",
-      "As a work is copied, what can still be traced to its source?",
-    ],
-    calligraphy: [
-      "当笔迹变成图像，哪些书写动作还能被看见？",
-      "When handwriting becomes an image, which gestures remain visible?",
-    ],
-    music: [
-      "同一段旋律，为什么会被听成不同的表达？",
-      "How can the same melody carry different expressions?",
-    ],
-    translation: [
-      "一个故事换一种语言，哪些文化含义容易改变？",
-      "Which cultural meanings change when a story moves between languages?",
-    ],
-  };
-  const tour = ["pothen", "polytropos", "diting"];
-  const steps = {
-    pothen: ["从照片辨认来源", "Read an object’s origins"],
-    polytropos: ["从描述重建藏品", "Reconstruct an object"],
-    diting: ["追踪翻译中的文化意义", "Trace meaning in translation"],
-  };
-  const ui = {
-    fieldsNav: ["领域", "Fields"],
-    papersNav: ["论文与主题", "Research index"],
-    theoryNav: ["理论", "Theory"],
-    changeField: ["切换领域", "Change field"],
-    back: ["上一步", "Back"],
-    lead: [
-      "从{museum:一件藏品}、{calligraphy:一幅墨迹}或{music:一段旋律}出发，追踪文化意义如何改变。",
-      "Begin with {museum:a museum object}, {calligraphy:a brushstroke} or {music:a melody}, and trace how its meaning changes.",
-    ],
-    start: ["开始论文导览", "Start the paper trail"],
-    published: ["公开论文", "Public papers"],
-    topic: ["研究主题", "Research topics"],
-    connections: ["沿研究关联继续", "Follow a research connection"],
-    tourName: ["三篇论文导览", "Three-paper trail"],
-    free: ["退出导览", "Leave trail"],
-    end: ["完成 · 浏览研究索引", "Finish · Browse the index"],
-    allPapers: ["查看论文与主题", "Browse the research index"],
-    concepts: ["循理论探索", "Explore the concepts"],
-    prompt: [
-      "点选徽记，展开该领域的研究",
-      "Select an emblem to open its field",
-    ],
-
-    title: [
-      "AI 如何解读并重塑文化？",
-      "How Does AI Interpret and Reshape Culture?",
-    ],
-    intro: [
-      "文化意义在哪里发生变化？从行动者网络理论出发",
-      "Where does cultural meaning change? Start with actor-network theory",
-    ],
-    fields: ["五个研究领域", "Research fields"],
-    foundation: ["人类学", "Anthropology"],
-    anthropology: ["行动者网络理论", "Actor-network theory"],
-    disciplines: ["认知科学六学科", "Six disciplines"],
-    processes: ["六类认知过程", "Six cognitive processes"],
-    ai: ["人工智能与认知科学", "AI and cognitive science"],
-    open: [
-      "选择一个领域，展开它的论文。",
-      "Choose a field to uncover its papers.",
-    ],
-    pick: [
-      "选择一篇论文，探索它与其他研究的联系。",
-      "Choose a paper to explore its connections with other work.",
-    ],
-    compare: [
-      "触碰金线阅读关联，选择相邻论文继续探索。",
-      "Explore a gold line to read the connection, then follow a neighbouring paper.",
-    ],
-    return: ["返回五个领域", "All five fields"],
-    close: ["收起文字", "Close reading"],
-    graph: ["研究关系图谱", "Research connections"],
-    paperKind: ["公开论文", "Public paper"],
-    topicKind: ["研究主题", "Research topic"],
-    nextStop: ["下一篇 · ", "Next · "],
-    tourKeys: ["← → 切换导览论文", "← → to move along the trail"],
-    searchKey: ["论文与主题（快捷键 /）", "Research index (shortcut /)"],
-    homeGuide: [
-      "点选徽记展开，拖动漫游，滚轮、双指或双击缩放。",
-      "Choose an emblem to explore. Drag to move • Scroll, pinch or double-click to zoom.",
-    ],
-    theoryGuide: [
-      "点选理论节点，展开解释。",
-      "Select a concept to unfold its explanation.",
-    ],
-    conceptGuide: [
-      "触碰金线看关联，点相邻节点继续。",
-      "Follow a gold line or select a neighbouring node.",
-    ],
-    paperGuide: [
-      "点金线上的圆结阅读关联，或点相邻星点继续。",
-      "Select a knot on a gold line to read a connection, or a neighbouring star to continue.",
-    ],
+  // Each step of the loop hands something to the next.
+  const LOOP = [
+    {
+      label: ["从描述到转述", "From describing to retelling"],
+      text: [
+        "只掌握“类型”的描述者，在文化之间转述时会保留什么？",
+        "What does a describer that knows only the type keep when it carries words between cultures?",
+      ],
+    },
+    {
+      label: ["从转述到创作", "From retelling to making"],
+      text: [
+        "AI 不只转达已有的作品，还要回应一首诗、写出一幅字。",
+        "AI no longer only passes works along; it answers a poem by writing it.",
+      ],
+    },
+    {
+      label: ["从笔迹到声音", "From the brush to the string"],
+      text: [
+        "意图怎样变成动作：毛笔的起、行、收，与琵琶的触弦，是同一个问题。",
+        "How intention becomes movement: the start, travel and finish of a brushstroke and the touch on a pipa string pose the same question.",
+      ],
+    },
+    {
+      label: ["与人一同被聆听", "Heard alongside people"],
+      text: [
+        "AI 的作品与人类作品一同被聆听、学习；被引用与再训练时，由谁署名、从何而来？",
+        "AI's works are heard and learned alongside human ones. When they are cited and trained on, who is credited, and where did they come from?",
+      ],
+    },
+    {
+      label: ["回到下一代模型", "Back to the next model"],
+      text: [
+        "AI 的产出被引用、学习、再训练，回到人类文化与下一代模型，又被用来描述文化：循环由此继续。",
+        "Outputs are cited, learned from and trained on, returning to human culture and to the next models, which describe culture again.",
+      ],
+    },
+  ];
+  // The loop runs clockwise around the middle of the sky; papers fan outward.
+  const PLACE = {
+    loop: [0, 10],
+    museum: [-430, -20],
+    polytropos: [-600, -175],
+    pothen: [-640, 115],
+    translation: [-130, -270],
+    diting: [-340, -400],
+    revision: [-70, -470],
+    languages: [140, -420],
+    calligraphy: [300, -190],
+    composition: [500, -330],
+    handwriting: [575, -100],
+    music: [320, 210],
+    qiuniu: [575, 250],
+    interpretation: [480, 425],
+    instrumental: [235, 445],
+    rights: [-80, 285],
+    motif: [-330, 420],
+    provenance: [-45, 490],
   };
   const lenses = {
     pothen: [
-      "disciplines",
-      5,
+      "disciplines/5",
       ["从计算表征理解归属判断", "Explore computational representation"],
     ],
     polytropos: [
-      "processes",
-      4,
+      "processes/4",
       ["哪些证据足以支持判断？", "What counts as evidence for a judgement?"],
     ],
     diting: [
-      "disciplines",
-      2,
+      "disciplines/2",
       ["从语言学看隐含意义", "Explore implicit meaning in linguistics"],
     ],
   };
+  const ui = {
+    fieldsNav: ["五个领域", "Five fields"],
+    theoryNav: ["理论与立场", "Theory & stance"],
+    overview: ["全图", "Overview"],
+    papersNav: ["论文与主题", "Papers & topics"],
+    foundation: ["理论基础与立场", "Foundation & stance"],
+    title: [
+      "AI 如何解读<br>并<em>重塑文化</em>？",
+      "How Does AI <em>Interpret</em> and Reshape Culture?",
+    ],
+    stance: [
+      "AI 不只是记录文化的媒介。作为文化的新{field/museum:描述者}与新{field/calligraphy:创作者}，它正在成为编织{theory/anthropology/0:意义之网}的{theory/anthropology/1:行动者}。",
+      "AI no longer only records culture. As its new {field/museum:describer} and {field/calligraphy:creator}, AI is becoming an {theory/anthropology/1:actor} in the {theory/anthropology/0:web of meaning}.",
+    ],
+    startLoop: ["沿文化循环探索", "Follow the culture loop"],
+    loopName: ["文化循环", "The culture loop"],
+    loopLine: [
+      "AI 进入文化循环：理解、转述、创作、与人互动，再回到人类。",
+      "AI enters a culture loop: understanding, retelling, creating, meeting people, and returning to them.",
+    ],
+    read: ["理论视角", "Read through"],
+    next: ["下一环", "Next"],
+    prev: ["上一环", "Back"],
+    leave: ["退出循环", "Leave the loop"],
+    lastStop: ["回到立场", "Back to the stance"],
+    paperKind: ["公开论文", "Public paper"],
+    topicKind: ["研究主题", "Research topic"],
+    connections: ["沿研究关联继续", "Follow a research connection"],
+    close: ["收起", "Close"],
+    back: ["上一步", "Back"],
+    theory: ["理论", "Theory"],
+    graph: ["研究关系图谱", "Research connections"],
+    guideHome: [
+      "点选星座展开领域；拖动漫游，滚轮、双指或双击缩放。",
+      "Select a constellation to open it. Drag to move • Scroll, pinch or double-click to zoom.",
+    ],
+    guideHomeTouch: [
+      "轻点星座展开领域；拖动漫游，双指缩放。",
+      "Tap a constellation to open it. Drag to move, pinch to zoom.",
+    ],
+    guideField: [
+      "点选星点打开论文；金线悬停即可阅读。",
+      "Select a star to open its paper; hover a gold line to read it.",
+    ],
+    guidePaper: [
+      "点金线上的圆结阅读关联，或点相邻星点继续。",
+      "Select a knot on a gold line to read a connection, or a neighbouring star to continue.",
+    ],
+    guideTheory: [
+      "亮起的星座与这条理论相关，点选即可前往。",
+      "The lit constellations draw on this idea; select one to go there.",
+    ],
+    guideTheoryPick: [
+      "在左栏选一条理论，相关的星座会在这里亮起。",
+      "Choose an idea in the foundation; the constellations it speaks to light up here.",
+    ],
+    tourKeys: ["← → 切换", "← → to move"],
+    railOpen: ["展开理论基础与立场", "Open the foundation and stance"],
+    railClose: ["收起理论", "Close the theory"],
+  };
+
+  // ── Shorthand ──────────────────────────────────────────────────────────
   const $ = (q) => document.querySelector(q);
-  const stage = $("#graph-scene"),
-    mast = $("#mast"),
-    atlas = $("#atlas"),
-    header = $(".head"),
-    toolbar = $(".sky-controls"),
-    tourBar = $("#guided-route"),
-    sky = $(".night-sky"),
-    map = $("#map"),
-    layer = $("#nodes"),
-    card = $("#node-card"),
-    theory = $("#theory"),
-    drawer = $("#index-drawer"),
-    caption = $("#field-caption"),
-    tip = $("#tip");
-  const finePointer = matchMedia("(hover: hover) and (pointer: fine)");
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const esc = (s) =>
     String(s).replace(
       /[&<>"]/g,
       (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
     );
-  const concepts = ["anthropology", "disciplines", "processes", "ai"];
+  const fieldById = Object.fromEntries(fields.map((f) => [f.id, f]));
+  const owner = Object.fromEntries(
+    fields.flatMap((f) => f.papers.map((p) => [p, f])),
+  );
+  const fieldKey = (id) => "field-" + id,
+    paperKey = (id) => "paper-" + id;
+  const keyId = (key) => key.replace(/^(field|paper)-/, "");
+  const pairs = (id) => PAPER_RELATIONS.filter((r) => r.a === id || r.b === id);
+  const other = (r, id) => (r.a === id ? r.b : r.a);
+  const ring = (id) => fields.findIndex((f) => f.id === id);
+  const nextField = (id) => fields[(ring(id) + 1) % fields.length];
+  const prevField = (id) =>
+    fields[(ring(id) + fields.length - 1) % fields.length];
+  const mark = (f) => "①②③④⑤"[f.stage - 1];
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  const wide = matchMedia("(min-width: 900px)");
+  const finePointer = matchMedia("(hover: hover) and (pointer: fine)");
+  const easeInOut = (u) =>
+    u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+
   let lang = +!navigator.language.toLowerCase().startsWith("zh");
   try {
     const saved = localStorage.getItem("atlas-language");
@@ -195,283 +249,234 @@
     t = (key) => l(ui[key]);
   const route = (hash, label, cls = "") =>
     '<a class="' + cls + '" href="' + esc(hash) + '">' + esc(label) + "</a>";
-  const fieldKey = (id) => "field-" + id,
-    paperKey = (id) => "paper-" + id,
-    theoryKey = (id) => "theory-" + id;
-  const pairs = (id) => PAPER_RELATIONS.filter((r) => r.a === id || r.b === id);
-  const other = (r, id) => (r.a === id ? r.b : r.a);
-  const nodes = new Map(),
-    links = new Map();
-  let groups = new Set(),
-    read = new Set(),
-    theoryOpen = false,
-    active = { kind: "home" },
+  // "{hash:words}" in a sentence becomes a link to that part of the map.
+  const linked = (text) =>
+    esc(text).replace(
+      /\{([\w/]+):([^}]+)\}/g,
+      (_, hash, words) =>
+        '<a class="lead-link" href="#' +
+        hash +
+        '" data-target="' +
+        hash +
+        '">' +
+        words +
+        "</a>",
+    );
+  const theoryLabel = (lens) => {
+    const [view, index] = lens.split("/");
+    return window.theoryName?.(view, +index, lang) || view;
+  };
+
+  // ── Page parts ─────────────────────────────────────────────────────────
+  const stage = $("#graph-scene"),
+    atlas = $("#atlas"),
+    header = $(".head"),
+    rail = $("#foundation"),
+    railScroll = $("#rail-scroll"),
+    railHandle = $("#rail-handle"),
+    toolbar = $(".sky-controls"),
+    tourBar = $("#loop-tour"),
+    sky = $(".night-sky"),
+    map = $("#map"),
+    layer = $("#nodes"),
+    card = $("#node-card"),
+    caption = $("#field-caption"),
+    drawer = $("#index-drawer"),
+    portals = $("#portals"),
+    tip = $("#tip");
+
+  // ── State ──────────────────────────────────────────────────────────────
+  let active = { kind: "home" },
+    showNote = false,
     indexOpen = false,
-    showNote = false;
-  let camera = null,
-    world = {},
+    railOpen = false,
+    litPreview = null,
+    camera = null,
     frame = 0,
-    surfaceSize = "",
+    travelling = false,
     pinned = null,
     previewKey = null,
-    layoutResult = null,
-    lastURL = location.href;
-  let introDismissed = false;
-  let insets = { left: 0, right: 0, top: 0, bottom: 0 };
-  let homeInsets = {};
-  const viewportInsets = () => insets;
-  let noteSize = { w: 0, h: 0 },
-    visibleKeys = new Set(),
-    currentFocus = "core",
-    lastTheory = null;
-  const pointers = new Map();
-  let drag = null,
-    pinch = null;
-  const ghostLinks = new Set();
-  const arrivals = new WeakMap(),
-    blooms = new WeakMap();
-  let noteEntrance = null,
+    tall = false,
+    railStamp = "",
+    railView = "stance",
+    railIndex = null,
+    revealTheory = false,
+    lastURL = location.href,
+    noteEntrance = null,
     captionEntrance = null,
-    surfacing = [],
-    travelling = false;
-  const easeInOut = (u) =>
-    u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
-  const easeOut = (u) => 1 - Math.pow(1 - u, 3);
-  const focusKey = (a) =>
-    a.kind === "paper"
-      ? paperKey(a.id)
-      : a.kind === "field"
-        ? fieldKey(a.id)
-        : a.kind === "concept"
-          ? theoryKey(a.id)
-          : "core";
-  const linkLabel = (a, b) => l(CAT[other(a, b)].short);
-  function parse(hash) {
-    const [kind, id, index] = hash.replace(/^#/, "").split("/");
-    if (
-      (kind === "paper" && owner[id]) ||
-      (kind === "guide" && tour.includes(id))
-    )
-      return { kind: "paper", id, guided: kind === "guide" };
-    if (kind === "field" && fieldById[id]) return { kind: "field", id };
-    if (kind === "theory")
-      return concepts.includes(id)
-        ? {
-            kind: "concept",
-            id,
-            index: /^[0-5]$/.test(index || "") ? +index : null,
-          }
-        : { kind: "theory" };
-    return { kind: "home" };
-  }
-  function remember() {
-    history.replaceState(
-      {
-        ...history.state,
-        skyMap: {
-          groups: [...groups],
-          read: [...read],
-          theoryOpen,
-          active,
-          showNote,
-          indexOpen,
-          introDismissed,
-          camera: camera ? { ...camera } : null,
-          size: stage.clientWidth + "x" + stage.clientHeight,
-        },
-      },
-      "",
-      location.href,
-    );
-  }
-  function materialise(a) {
-    if (a.kind === "field") groups.add(a.id);
-    if (a.kind === "paper") {
-      groups.add(owner[a.id].id);
-      read.add(a.id);
+    surfacing = [];
+  let world = {};
+  const nodes = new Map(),
+    links = new Map(),
+    read = new Set();
+
+  function placeWorld() {
+    // A tall map turns the sky a quarter turn so the loop keeps its shape.
+    world = {};
+    for (const [id, [x, y]] of Object.entries(PLACE)) {
+      const key =
+        id === "loop" ? "loop" : fieldById[id] ? fieldKey(id) : paperKey(id);
+      // Landscape skies are shallower than the plan, so the rows close up.
+      world[key] = tall ? { x: -y * 0.92, y: x * 1.02 } : { x, y: y * 0.86 };
     }
-    if (a.kind === "theory" || a.kind === "concept") theoryOpen = true;
   }
-  function navigate(hash) {
-    if (hash === "#atlas") introDismissed = false;
-    if (location.hash === hash) {
-      if (hash === "#papers") {
-        closeIndex();
-        return;
-      }
-      showNote = ["paper", "concept"].includes(active.kind);
-      update(true);
-      return;
-    }
-    remember();
-    history.pushState({ depth: (history.state?.depth || 0) + 1 }, "", hash);
-    lastURL = location.href;
-    indexOpen = hash === "#papers";
-    if (!indexOpen) {
-      active = parse(hash);
-      materialise(active);
-      showNote = ["concept", "paper"].includes(active.kind);
-    }
-    update(!indexOpen);
-    if (indexOpen)
-      drawer.querySelector("input")?.focus({ preventScroll: true });
-  }
-  function closeIndex() {
-    if (!indexOpen) return;
-    if (history.state?.depth > 0) {
-      history.back();
-      return;
-    }
-    indexOpen = false;
-    active = { kind: "home" };
-    history.replaceState(null, "", "#atlas");
-    lastURL = location.href;
-    update(true);
-  }
-  function restore() {
-    if (lastURL === location.href) return;
-    lastURL = location.href;
-    const saved = history.state?.skyMap;
-    if (saved) {
-      groups = new Set(saved.groups);
-      read = new Set(saved.read);
-      theoryOpen = saved.theoryOpen;
-      active = saved.active;
-      introDismissed = !!saved.introDismissed;
-      showNote = saved.showNote;
-      indexOpen = saved.indexOpen;
-    } else {
-      introDismissed = false;
-      indexOpen = location.hash === "#papers";
-      active = parse(location.hash);
-      materialise(active);
-      showNote = ["paper", "concept"].includes(active.kind);
-    }
-    update(
-      true,
-      saved?.size === stage.clientWidth + "x" + stage.clientHeight
-        ? saved.camera
-        : null,
-    );
-  }
-  window.explorePaper = (id) => {
-    if (owner[id]) navigate("#paper/" + id);
-  };
-  window.exploreView = (view, idx = null) => {
-    if (view === "fields") navigate("#atlas");
-    else if (concepts.includes(view))
-      navigate("#theory/" + view + (Number.isInteger(idx) ? "/" + idx : ""));
-  };
-  function makeNode(key, cls, action) {
+
+  // ── Nodes ──────────────────────────────────────────────────────────────
+  function makeNode(key, cls) {
     const el = document.createElement("button");
     el.type = "button";
     el.className = cls;
-    el.hidden = true;
-    el.addEventListener("click", action);
+    el.dataset.key = key;
     layer.append(el);
     nodes.set(key, el);
     return el;
   }
   function createNodes() {
-    const core = makeNode("core", "foundation", () => navigate("#theory"));
-    core.dataset.key = "core";
+    makeNode("loop", "loopnode");
     for (const f of fields) {
-      const el = makeNode(fieldKey(f.id), "dnode", () => {
-        if (active.kind === "field" && active.id === f.id && groups.has(f.id)) {
-          groups.delete(f.id);
-          for (const p of f.papers) read.delete(p);
-          navigate("#atlas");
-          return;
-        }
-        navigate("#field/" + f.id);
-      });
-      el.dataset.domain = f.id;
-      el.dataset.key = fieldKey(f.id);
+      makeNode(fieldKey(f.id), "dnode").dataset.field = f.id;
       for (const id of f.papers) {
-        const btn = makeNode(
+        const el = makeNode(
           paperKey(id),
           "pnode " + (CAT[id].links.length ? "public" : "topic"),
-          () => {
-            if (active.kind === "paper" && active.id === id && !indexOpen) {
-              showNote = !showNote;
-              update(false);
-            } else window.explorePaper(id);
-          },
         );
-        btn.dataset.project = id;
-        btn.dataset.key = paperKey(id);
-        btn.setAttribute("aria-controls", "node-card");
+        el.dataset.project = id;
       }
     }
-    for (const id of concepts) {
-      const el = makeNode(theoryKey(id), "tnode", () => window.exploreView(id));
-      el.dataset.concept = id;
-      el.dataset.key = theoryKey(id);
-      el.setAttribute("aria-controls", "theory");
-    }
+    layer.addEventListener("click", (e) => {
+      const el = e.target.closest("[data-key]");
+      if (!el) return;
+      const key = el.dataset.key;
+      if (key === "loop") return navigate("#loop/" + fields[0].id);
+      const id = keyId(key);
+      if (key.startsWith("field-"))
+        return navigate((active.loop ? "#loop/" : "#field/") + id);
+      if (active.kind === "paper" && active.id === id && !indexOpen) {
+        showNote = !showNote;
+        update(false);
+      } else navigate("#paper/" + id);
+    });
   }
+
+  // ── Lines ──────────────────────────────────────────────────────────────
+  const SVG = "http://www.w3.org/2000/svg";
+  function svg(tag, attrs = {}) {
+    const el = document.createElementNS(SVG, tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    return el;
+  }
+  function addLink(id, kind, a, b, words) {
+    const group = svg("g", {
+      class: "edge " + kind + "-edge",
+      role: "button",
+      tabindex: "-1",
+      "data-id": id,
+    });
+    const hit = svg("path", { class: "hit" }),
+      ink = svg("path", { class: "domain-link" }),
+      gleam = svg("path", { class: "gleam", pathLength: 100 });
+    group.append(hit, ink, gleam);
+    const item = { id, kind, a, b, words, group, hit, ink, gleam };
+    if (kind === "loop") {
+      item.flow = svg("path", { class: "flow", pathLength: 1 });
+      item.arrow = svg("path", { class: "arrow", d: "M-5 -4.5L2 0L-5 4.5" });
+      group.insertBefore(item.flow, gleam);
+      group.append(item.arrow);
+    }
+    if (kind === "relation") {
+      item.knot = svg("circle", { class: "knot", r: 5.5 });
+      group.append(item.knot);
+    }
+    $("#edges").append(group);
+    links.set(id, item);
+  }
+  function createLinks() {
+    fields.forEach((f, i) => {
+      const n = fields[(i + 1) % fields.length];
+      addLink("loop-" + f.id, "loop", fieldKey(f.id), fieldKey(n.id), () => [
+        mark(f) + " → " + mark(n) + " · " + l(LOOP[i].label),
+        l(LOOP[i].text),
+      ]);
+    });
+    for (const f of fields)
+      for (const p of f.papers)
+        addLink("member-" + p, "member", fieldKey(f.id), paperKey(p), () => [
+          l(CAT[p].short),
+          l(CAT[p].relation),
+        ]);
+    for (const r of PAPER_RELATIONS)
+      addLink(
+        r.a + "--" + r.b,
+        "relation",
+        paperKey(r.a),
+        paperKey(r.b),
+        () => [l(r.label), l(r.text)],
+      );
+  }
+
+  // ── Words ──────────────────────────────────────────────────────────────
   function translateStatic() {
     document.documentElement.lang = lang ? "en" : "zh-Hans";
-    document.title = t("title") + " · Cultural Constellations";
+    document.title =
+      (lang
+        ? "How Does AI Interpret and Reshape Culture?"
+        : "AI 如何解读并重塑文化？") + " · Cultural Constellations";
     document
       .querySelectorAll("[data-i]")
       .forEach((el) => (el.textContent = t(el.dataset.i)));
     $("#en").setAttribute("aria-pressed", String(!!lang));
     $("#zh").setAttribute("aria-pressed", String(!lang));
-    const title = lang
-      ? "How Does AI <em>Interpret</em> and Reshape Culture?"
-      : "AI 如何解读<br>并<em>重塑文化</em>？";
-    $("#mast").innerHTML =
+    $("#rail-head").innerHTML =
       '<h1 id="site-title">' +
-      title +
-      '</h1><p class="home-lead">' +
-      esc(t("lead")).replace(
-        /\{(\w+):([^}]+)\}/g,
-        (_, id, words) =>
-          '<a class="lead-link" href="#field/' +
-          id +
-          '" data-field="' +
-          id +
-          '">' +
-          words +
-          "</a>",
-      ) +
-      '</p><div class="start-row">' +
-      route("#guide/pothen", t("start"), "primary-action") +
+      t("title") +
+      '</h1><p class="stance">' +
+      linked(t("stance")) +
+      '</p><p class="loop-line">' +
+      esc(t("loopLine")) +
+      '</p><div class="rail-actions">' +
+      route("#loop/" + fields[0].id, t("startLoop"), "primary-action") +
+      route("#papers", t("papersNav"), "secondary-action") +
       "</div>";
+    railHandle.innerHTML =
+      '<span class="handle-bar" aria-hidden="true"></span><span class="handle-text">' +
+      esc(t("foundation")) +
+      "</span>";
     $("#zoom-in").setAttribute("aria-label", lang ? "Zoom in" : "放大");
     $("#zoom-out").setAttribute("aria-label", lang ? "Zoom out" : "缩小");
-    $("#view-all").textContent = lang ? "Fit network" : "全景";
-    // Shortcuts are announced where they act, and shown on hover.
     $("#zoom-in").title = (lang ? "Zoom in" : "放大") + " (+)";
     $("#zoom-out").title = (lang ? "Zoom out" : "缩小") + " (−)";
+    $("#view-all").textContent = t("overview");
     $("#view-all").title =
-      (lang ? "Show the whole network" : "显示完整图谱") + " (Home)";
+      (lang ? "Show every constellation" : "显示全部星座") + " (Home)";
     const indexLink = $('#explore-nav a[data-mode="papers"]');
-    indexLink.title = t("searchKey");
+    indexLink.title =
+      t("papersNav") + (lang ? " (shortcut /)" : "（快捷键 /）");
     indexLink.setAttribute("aria-keyshortcuts", "/");
-    tourBar.setAttribute("aria-label", t("tourName"));
-    $("#trail").setAttribute(
-      "aria-label",
-      lang ? "Exploration path" : "探索路径",
-    );
     $("#back-step").textContent = "‹ " + t("back");
-    $("#back-step").setAttribute("aria-label", t("back"));
-    drawer.querySelector("h2").textContent = t("papersNav");
     for (const b of document.querySelectorAll(".float-close")) {
       b.textContent = "×";
       b.setAttribute("aria-label", t("close"));
     }
-    const core = nodes.get("core");
-    core.innerHTML =
-      "<b>" + t("foundation") + "</b><span>" + t("anthropology") + "</span>";
+    const loop = nodes.get("loop");
+    loop.innerHTML =
+      '<span class="loop-glyph" aria-hidden="true">↻</span><span class="node-label">' +
+      esc(t("loopName")) +
+      "</span>";
+    loop.setAttribute("aria-label", t("loopName") + " · " + t("startLoop"));
     for (const f of fields) {
       const el = nodes.get(fieldKey(f.id));
-      el.setAttribute("aria-label", l(f.name));
+      el.setAttribute(
+        "aria-label",
+        mark(f) + " " + l(f.step) + " · " + l(f.name),
+      );
       el.innerHTML =
         '<span class="coin"><img alt="" draggable="false" src="' +
         ART[f.art] +
-        '"></span><span class="switch" aria-hidden="true"></span><span class="node-label"><b>' +
+        '"></span><span class="node-label"><em class="stage">' +
+        mark(f) +
+        " " +
+        esc(l(f.step)) +
+        "</em><b>" +
         esc(l(f.name)) +
         "</b><small>" +
         esc(l(f.guardian)) +
@@ -488,137 +493,265 @@
           "</span>";
       }
     }
-    for (const id of concepts) {
-      const el = nodes.get(theoryKey(id));
-      el.innerHTML =
-        '<span class="theory-dot" aria-hidden="true"></span><span class="node-label">' +
-        esc(t(id)) +
-        "</span>";
-      el.setAttribute("aria-label", t(id));
-    }
     stage.setAttribute("aria-label", t("graph"));
     stage.tabIndex = 0;
+    railStamp = "";
   }
+
+  // ── Routing ────────────────────────────────────────────────────────────
+  function parse(hash) {
+    const [kind, id, index] = hash.replace(/^#/, "").split("/");
+    if ((kind === "paper" || kind === "guide") && owner[id])
+      return { kind: "paper", id };
+    if ((kind === "field" || kind === "loop") && fieldById[id])
+      return { kind: "field", id, loop: kind === "loop" };
+    if (kind === "theory") {
+      const views = window.theoryViews || [];
+      return {
+        kind: "theory",
+        view: views.includes(id) ? id : "stance",
+        index: /^[0-5]$/.test(index || "") ? +index : null,
+      };
+    }
+    return { kind: "home" };
+  }
+  function enter(hash) {
+    indexOpen = hash === "#papers";
+    if (!indexOpen) {
+      active = parse(hash);
+      showNote = active.kind === "paper";
+      if (active.kind === "paper") read.add(active.id);
+      // A view named without an item keeps the item last chosen in it.
+      if (active.kind === "theory" && active.index === null)
+        active.index = window.theorySelected?.(active.view) ?? null;
+    }
+    if (active.kind === "theory" && !indexOpen) {
+      railOpen = true;
+      revealTheory = true;
+    } else if (active.kind !== "home" || indexOpen) railOpen = false;
+  }
+  function navigate(hash) {
+    if (location.hash === hash) {
+      if (hash === "#papers") return closeIndex();
+      if (active.kind === "paper") showNote = true;
+      update(true);
+      return;
+    }
+    history.pushState({ depth: (history.state?.depth || 0) + 1 }, "", hash);
+    lastURL = location.href;
+    enter(hash);
+    update(true);
+    if (indexOpen)
+      drawer.querySelector("input")?.focus({ preventScroll: true });
+  }
+  function closeIndex() {
+    if (!indexOpen) return;
+    if (history.state?.depth > 0) return history.back();
+    indexOpen = false;
+    active = { kind: "home" };
+    history.replaceState(null, "", "#atlas");
+    lastURL = location.href;
+    update(true);
+  }
+  function restore() {
+    if (lastURL === location.href) return;
+    lastURL = location.href;
+    enter(location.hash);
+    update(true);
+  }
+  window.explorePaper = (id) => owner[id] && navigate("#paper/" + id);
+  window.exploreField = (id) => fieldById[id] && navigate("#field/" + id);
+  window.exploreView = (view, idx = null) =>
+    navigate("#theory/" + view + (Number.isInteger(idx) ? "/" + idx : ""));
+  window.fieldName = (id, l2) => {
+    const f = fieldById[id];
+    return f ? mark(f) + " " + f.name[l2 === 1 ? 1 : 0] : id;
+  };
+  // A reader choosing an item in the theory rail moves the map's centre.
+  window.onTheorySelect = (view, index) => {
+    const hash = "#theory/" + view + "/" + index;
+    railView = view;
+    railIndex = index;
+    railStamp = [lang, view, index].join("/");
+    active = { kind: "theory", view, index };
+    showNote = false;
+    indexOpen = false;
+    if (location.hash !== hash) {
+      history.pushState({ depth: (history.state?.depth || 0) + 1 }, "", hash);
+      lastURL = location.href;
+    }
+    update(true);
+  };
+  window.onTheoryHover = (view, index) => {
+    litPreview = index === null ? null : new Set(theoryKeys(view, index));
+    applyEmphasis();
+  };
+  function theoryKeys(view, index) {
+    const ids = window.theoryFields?.(view, index) || [];
+    return ids.flatMap((id) => [
+      fieldKey(id),
+      ...fieldById[id].papers.map(paperKey),
+    ]);
+  }
+
+  // ── Rail ───────────────────────────────────────────────────────────────
+  function syncRail() {
+    if (active.kind === "theory" && !indexOpen) {
+      railView = active.view;
+      railIndex = active.index;
+    }
+    const stamp = [lang, railView, railIndex ?? ""].join("/");
+    if (stamp !== railStamp) {
+      const before = railScroll.scrollTop;
+      railStamp = stamp;
+      window.renderTheory(lang, railView, railIndex);
+      // The theory re-renders in place; the reader's place in the rail stays.
+      railScroll.scrollTop = before;
+    }
+    atlas.classList.toggle("rail-open", railOpen);
+    rail.classList.toggle("is-open", railOpen);
+    railHandle.setAttribute("aria-expanded", String(railOpen));
+    railHandle.setAttribute(
+      "aria-label",
+      railOpen ? t("railClose") : t("railOpen"),
+    );
+  }
+  // Bring the theory, and the first lines of its open reading, into view.
+  function showTheory(animate) {
+    const box = railScroll.getBoundingClientRect();
+    const at = (el) =>
+      el.getBoundingClientRect().top - box.top + railScroll.scrollTop;
+    let top = at($(".rail-theory")) - 4;
+    const reading = $("#fw-reading");
+    if (reading && !reading.hidden) {
+      const enough = at(reading) + Math.min(170, reading.offsetHeight);
+      if (enough > top + railScroll.clientHeight)
+        top = enough - railScroll.clientHeight;
+    }
+    railScroll.scrollTo({
+      top: Math.max(0, top),
+      behavior: animate && !reduced.matches ? "smooth" : "instant",
+    });
+  }
+
+  // ── Controls ───────────────────────────────────────────────────────────
   function buildControls() {
-    const activeField =
-      active.kind === "paper" ? owner[active.id] : fieldById[active.id];
-    const theoryFocus = ["theory", "concept"].includes(active.kind);
-    const mode = indexOpen ? "papers" : theoryFocus ? "framework" : "fields";
+    const mode = indexOpen
+      ? "papers"
+      : active.kind === "theory"
+        ? "framework"
+        : "fields";
     for (const b of document.querySelectorAll("#explore-nav a")) {
       if (b.dataset.mode === mode) b.setAttribute("aria-current", "location");
       else b.removeAttribute("aria-current");
     }
-    const crumbs = [route("#atlas", t("fieldsNav"))];
+    const crumbs = [route("#atlas", t("overview"))];
     if (indexOpen) crumbs.push(esc(t("papersNav")));
-    else if (activeField) {
+    else if (active.kind === "field") {
+      const f = fieldById[active.id];
+      crumbs.push(esc(mark(f) + " " + l(f.name)));
+    } else if (active.kind === "paper") {
+      const f = owner[active.id];
       crumbs.push(
-        active.kind === "paper"
-          ? route("#field/" + activeField.id, l(activeField.name))
-          : esc(l(activeField.name)),
+        route("#field/" + f.id, mark(f) + " " + l(f.name)),
+        esc(l(CAT[active.id].short)),
       );
-      if (active.kind === "paper") crumbs.push(esc(l(CAT[active.id].short)));
-    } else if (theoryFocus) {
-      if (active.kind === "concept")
-        crumbs.push(route("#theory", t("theoryNav")), esc(t(active.id)));
-      else crumbs.push(esc(t("theoryNav")));
-    }
+    } else if (active.kind === "theory")
+      crumbs.push(
+        esc(
+          t("theory") +
+            " · " +
+            (Number.isInteger(active.index)
+              ? window.theoryName?.(active.view, active.index, lang)
+              : window.theoryName?.(active.view, null, lang) || ""),
+        ),
+      );
     $("#trail").innerHTML = crumbs.join('<i aria-hidden="true">/</i>');
-    const back = $("#back-step");
-    back.hidden = !(
+    $("#back-step").hidden = !(
       history.state?.depth ||
       active.kind !== "home" ||
       indexOpen
     );
-    const guided = $("#guided-route");
-    guided.hidden = !active.guided || indexOpen;
-    $("#mast").querySelector(".start-row").hidden =
-      !!active.guided && !indexOpen;
-    if (active.guided && !indexOpen) {
-      const i = tour.indexOf(active.id),
-        next = tour[i + 1];
-      guided.innerHTML =
+    $("#graph-guide").textContent =
+      active.kind === "home"
+        ? t(finePointer.matches ? "guideHome" : "guideHomeTouch")
+        : active.kind === "field"
+          ? t("guideField") +
+            (active.loop && finePointer.matches ? " " + t("tourKeys") : "")
+          : active.kind === "theory"
+            ? theoryKeys(active.view, active.index).length
+              ? t("guideTheory")
+              : t("guideTheoryPick")
+            : t("guidePaper");
+    // The loop tour names every step and offers the next one.
+    tourBar.hidden = !(active.kind === "field" && active.loop) || indexOpen;
+    if (!tourBar.hidden) {
+      const i = ring(active.id),
+        next = fields[i + 1];
+      tourBar.innerHTML =
         '<div class="tour-heading"><strong>' +
-        t("tourName") +
+        esc(t("loopName")) +
         "</strong>" +
-        route("#paper/" + active.id, t("free"), "leave-route") +
+        route("#field/" + active.id, t("leave"), "leave-route") +
         '</div><div class="tour-links">' +
-        tour
+        fields
           .map(
-            (id, n) =>
-              '<a href="#guide/' +
-              id +
-              '" ' +
-              (n === i ? 'aria-current="step"' : "") +
+            (f, n) =>
+              '<a href="#loop/' +
+              f.id +
+              '" title="' +
+              esc(mark(f) + " " + l(f.step) + " · " + l(f.name)) +
+              '"' +
+              (n === i ? ' aria-current="step"' : "") +
               '><span class="route-no">' +
-              (n + 1) +
-              "</span>" +
-              esc(l(CAT[id].short)) +
-              "</a>",
+              mark(f) +
+              '</span><span class="route-label">' +
+              esc(l(f.step)) +
+              "</span></a>",
           )
           .join("<i></i>") +
         '</div><div class="tour-forward">' +
         route(
-          next ? "#guide/" + next : "#papers",
+          next ? "#loop/" + next.id : "#theory/stance/2",
           next
-            ? (lang ? "Next · " : "下一篇 · ") + l(CAT[next].short)
-            : t("end"),
+            ? t("next") + " · " + mark(next) + " " + l(next.name)
+            : t("lastStop"),
           "next-stop",
         ) +
         "</div>";
     }
-    $("#graph-guide").textContent =
-      active.kind === "home"
-        ? t("homeGuide")
-        : active.kind === "field"
-          ? t("pick")
-          : active.kind === "theory"
-            ? t("theoryGuide")
-            : active.kind === "concept"
-              ? t("conceptGuide")
-              : active.guided && finePointer.matches
-                ? t("paperGuide") + " " + t("tourKeys")
-                : t("paperGuide");
-    for (const f of fields) {
-      const el = nodes.get(fieldKey(f.id));
-      el.setAttribute("aria-expanded", String(groups.has(f.id)));
-      el.querySelector(".switch").textContent = groups.has(f.id) ? "−" : "+";
-      // A faint ring marks papers already opened in this visit.
-      for (const id of f.papers)
-        nodes
-          .get(paperKey(id))
-          .classList.toggle(
-            "is-read",
-            read.has(id) && !(active.kind === "paper" && active.id === id),
-          );
-    }
-    for (const [key, el] of nodes) {
-      const selected = key === focusKey(active);
-      el.classList.toggle("is-focus", selected);
-      if (el.matches(".pnode,.tnode"))
-        el.setAttribute(
-          "aria-expanded",
-          String(selected && showNote && !indexOpen),
-        );
-    }
   }
-  function renderNotes() {
-    const paper = active.kind === "paper" && showNote && !indexOpen,
-      concept = active.kind === "concept" && showNote && !indexOpen;
+
+  // ── Notes ──────────────────────────────────────────────────────────────
+  function renderCaption() {
+    const f =
+      active.kind === "field" && !indexOpen ? fieldById[active.id] : null;
+    caption.hidden = !f;
+    if (!f) return;
+    const n = nextField(f.id),
+      p = prevField(f.id),
+      base = active.loop ? "#loop/" : "#field/";
+    caption.innerHTML =
+      '<p class="cap-stage">' +
+      mark(f) +
+      " " +
+      esc(l(f.step)) +
+      '</p><p class="cap-question">' +
+      esc(l(f.question)) +
+      '</p><p class="cap-lenses"><span>' +
+      esc(t("read")) +
+      "</span>" +
+      f.lenses
+        .map((lens) => route("#theory/" + lens, theoryLabel(lens), "cap-lens"))
+        .join('<i aria-hidden="true">·</i>') +
+      '</p><p class="cap-steps">' +
+      route(base + p.id, "‹ " + mark(p) + " " + l(p.name), "cap-prev") +
+      route(base + n.id, mark(n) + " " + l(n.name) + " ›", "cap-next") +
+      "</p>";
+  }
+  function renderCard() {
+    const paper = active.kind === "paper" && showNote && !indexOpen;
     card.hidden = !paper;
-    theory.hidden = !concept;
-    drawer.hidden = !indexOpen;
-    if (indexOpen) {
-      window.renderPaperIndex($("#paper-index"), lang, fields);
-      return;
-    }
-    if (concept) {
-      const stamp = [lang, active.id, active.index ?? ""].join("/");
-      if (stamp !== lastTheory) {
-        lastTheory = stamp;
-        window.renderTheory(lang, active.id, active.index ?? null);
-        theory.scrollTop = 0;
-      }
-    }
     if (!paper) return;
     const id = active.id,
       item = CAT[id],
@@ -635,7 +768,6 @@
           '<span aria-hidden="true"> ↗</span></a>',
       )
       .join("");
-    // data-pair lets a hovered row light up its gold line in the sky.
     const follow = pairs(id)
       .map(
         (r) =>
@@ -648,84 +780,508 @@
           "--" +
           r.b +
           '"><b>' +
-          esc(linkLabel(r, id)) +
+          esc(l(CAT[other(r, id)].short)) +
           "</b><span>" +
           esc(l(r.label)) +
           "</span></a>",
       )
       .join("");
-    let trail = "";
-    if (active.guided) {
-      const i = tour.indexOf(id),
-        prev = tour[i - 1],
-        next = tour[i + 1];
-      trail =
-        '<nav class="card-tour" aria-label="' +
-        esc(t("tourName")) +
-        '"><span class="card-step">' +
-        (i + 1) +
-        " / " +
-        tour.length +
-        "</span>" +
-        (prev
-          ? route("#guide/" + prev, "‹ " + l(CAT[prev].short), "tour-prev")
-          : "") +
-        route(
-          next ? "#guide/" + next : "#papers",
-          next ? t("nextStop") + l(CAT[next].short) + " ›" : t("end"),
-          "tour-next",
-        ) +
-        "</nav>";
-    }
-    card.dataset.anchor = id;
     card.classList.toggle("topic", !pub);
+    // Unpublished work shows only its topic; its links stay in the sky.
     card.innerHTML =
       '<button type="button" class="card-close" data-close="paper" aria-label="' +
-      t("close") +
+      esc(t("close")) +
       '">×</button><p class="card-eyebrow">' +
-      route("#field/" + home.id, l(home.name)) +
+      route("#field/" + home.id, mark(home) + " " + l(home.name)) +
       "<span>" +
       esc(t(pub ? "paperKind" : "topicKind")) +
       '</span></p><h2 id="card-title">' +
       esc(l(item.title)) +
       "</h2>" +
-      // Unpublished work shows only its topic; its links stay in the sky around it.
       (pub
         ? "<p>" +
           esc(l(item.description)) +
           '</p><div class="card-links">' +
           resources +
-          (lens
-            ? route(
-                "#theory/" + lens[0] + "/" + lens[1],
-                l(lens[2]),
-                "card-lens",
-              )
-            : "") +
+          (lens ? route("#theory/" + lens[0], l(lens[1]), "card-lens") : "") +
           '</div><nav class="follow-papers" aria-label="' +
-          t("connections") +
+          esc(t("connections")) +
           '"><strong>' +
-          t("connections") +
+          esc(t("connections")) +
           "</strong>" +
           follow +
-          "</nav>" +
-          trail
+          "</nav>"
         : "");
     card.scrollTop = 0;
   }
-  // A field's question surfaces beside its emblem, on the side facing the centre.
-  function renderCaption() {
-    const f =
-      active.kind === "field" && !indexOpen ? fieldById[active.id] : null;
-    caption.hidden = !f;
-    if (f) caption.textContent = l(question[f.id]);
+  function renderIndex() {
+    drawer.hidden = !indexOpen;
+    if (indexOpen) window.renderPaperIndex($("#paper-index"), lang, fields);
   }
+
+  // ── Emphasis: what the current centre brings forward ───────────────────
+  function emphasis() {
+    const focus = new Set(),
+      near = new Set();
+    if (!indexOpen && active.kind === "field") {
+      const f = fieldById[active.id];
+      focus.add(fieldKey(f.id));
+      for (const p of f.papers) {
+        near.add(paperKey(p));
+        for (const r of pairs(p)) near.add(paperKey(other(r, p)));
+      }
+      near.add(fieldKey(nextField(f.id).id));
+      near.add(fieldKey(prevField(f.id).id));
+    } else if (!indexOpen && active.kind === "paper") {
+      focus.add(paperKey(active.id));
+      near.add(fieldKey(owner[active.id].id));
+      for (const r of pairs(active.id)) near.add(paperKey(other(r, active.id)));
+    } else if (!indexOpen && active.kind === "theory")
+      for (const k of theoryKeys(active.view, active.index)) focus.add(k);
+    return { focus, near, lit: litPreview || new Set() };
+  }
+  function applyEmphasis() {
+    const { focus, near, lit } = emphasis();
+    const scoped = focus.size > 0;
+    const shown = (k) => focus.has(k) || near.has(k);
+    for (const [k, el] of nodes) {
+      el.classList.toggle("is-focus", focus.has(k));
+      el.classList.toggle("is-near", near.has(k));
+      el.classList.toggle("is-lit", lit.has(k));
+      el.classList.toggle(
+        "is-far",
+        k !== "loop" && scoped && !shown(k) && !lit.has(k),
+      );
+      if (el.dataset.project)
+        el.classList.toggle(
+          "is-read",
+          read.has(el.dataset.project) && !focus.has(k),
+        );
+    }
+    nodes.get("loop").classList.toggle("is-far", scoped);
+    const fieldFocus = active.kind === "field" && !indexOpen ? active.id : null;
+    for (const e of links.values()) {
+      let state = "rest";
+      if (scoped) {
+        const touch = focus.has(e.a) || focus.has(e.b);
+        const inField =
+          fieldFocus &&
+          e.kind === "relation" &&
+          [e.a, e.b].some((k) => owner[keyId(k)]?.id === fieldFocus);
+        const both = focus.has(e.a) && focus.has(e.b);
+        state =
+          touch || inField || (active.kind === "theory" && both)
+            ? "near"
+            : "far";
+        if (active.kind === "theory" && !both) state = "far";
+      }
+      e.group.classList.toggle("is-near", state === "near");
+      e.group.classList.toggle("is-far", state === "far");
+      e.group.classList.toggle("is-lit", lit.has(e.a) && lit.has(e.b));
+      e.group.setAttribute("aria-label", e.words()[0]);
+    }
+  }
+
+  // ── Camera ─────────────────────────────────────────────────────────────
+  function mapRect() {
+    const w = stage.clientWidth,
+      h = stage.clientHeight;
+    const top = Math.max(
+      header.getBoundingClientRect().bottom,
+      tourBar.hidden ? 0 : tourBar.getBoundingClientRect().bottom,
+    );
+    const left = wide.matches ? rail.offsetLeft + rail.offsetWidth : 0;
+    const bottom = Math.min(
+      toolbar.getBoundingClientRect().top,
+      wide.matches ? h : rail.offsetTop,
+      wide.matches || caption.hidden ? h : caption.offsetTop,
+    );
+    return {
+      left: left + 12,
+      right: w - 12,
+      top: top + 10,
+      bottom: Math.max(top + 60, bottom - 10),
+    };
+  }
+  function frameKeys(keys, anchor, maxScale) {
+    const r = mapRect();
+    const pts = keys.map((k) => world[k]).filter(Boolean);
+    const b = {
+      left: Math.min(...pts.map((p) => p.x)),
+      right: Math.max(...pts.map((p) => p.x)),
+      top: Math.min(...pts.map((p) => p.y)),
+      bottom: Math.max(...pts.map((p) => p.y)),
+    };
+    const phone = !wide.matches;
+    const pad = {
+      x: phone ? 46 : 84,
+      top: phone ? 34 : 46,
+      bottom: phone ? 52 : 74,
+    };
+    const left = r.left + pad.x,
+      right = r.right - pad.x,
+      top = r.top + pad.top,
+      bottom = r.bottom - pad.bottom;
+    const scale = clamp(
+      Math.min(
+        maxScale,
+        (right - left) / Math.max(1, b.right - b.left),
+        (bottom - top) / Math.max(1, b.bottom - b.top),
+      ),
+      0.18,
+      2.4,
+    );
+    const centre = { x: (left + right) / 2, y: (top + bottom) / 2 };
+    const a = anchor
+      ? world[anchor]
+      : {
+          x: (b.left + b.right) / 2,
+          y: (b.top + b.bottom) / 2,
+        };
+    return {
+      scale,
+      x: clamp(
+        centre.x - scale * a.x,
+        Math.min(left - b.left * scale, right - b.right * scale),
+        Math.max(left - b.left * scale, right - b.right * scale),
+      ),
+      y: clamp(
+        centre.y - scale * a.y,
+        Math.min(top - b.top * scale, bottom - b.bottom * scale),
+        Math.max(top - b.top * scale, bottom - b.bottom * scale),
+      ),
+    };
+  }
+  function targetCamera() {
+    const phone = !wide.matches;
+    if (!indexOpen && active.kind === "field") {
+      const f = fieldById[active.id];
+      const keys = [fieldKey(f.id)];
+      for (const p of f.papers) {
+        keys.push(paperKey(p));
+        if (!phone) for (const r of pairs(p)) keys.push(paperKey(other(r, p)));
+      }
+      return frameKeys(keys, fieldKey(f.id), phone ? 0.95 : 1.12);
+    }
+    if (!indexOpen && active.kind === "paper") {
+      const r = mapRect(),
+        key = paperKey(active.id),
+        p = world[key];
+      const aw = r.right - r.left,
+        ah = r.bottom - r.top;
+      const scale = phone ? 0.9 : clamp(0.78 + aw * 0.00022, 0.9, 1.1);
+      const cardHeight = card.hidden ? 0 : card.offsetHeight;
+      const gap = phone ? 54 : 60;
+      const y =
+        r.top +
+        Math.max(
+          Math.min(34, ah * 0.12),
+          Math.min(ah * 0.22, ah - cardHeight - gap - 12),
+        );
+      return { scale, x: r.left + aw / 2 - p.x * scale, y: y - p.y * scale };
+    }
+    if (!indexOpen && active.kind === "theory") {
+      const keys = theoryKeys(active.view, active.index);
+      if (keys.length) return frameKeys(keys, null, phone ? 0.9 : 1.05);
+    }
+    return frameKeys([...nodes.keys()], null, phone ? 0.8 : 1);
+  }
+  // A camera flight follows van Wijk and Nuij's smooth zoom: a long move
+  // widens the view slightly, travels, then settles.
+  function flight(from, to) {
+    const W = stage.clientWidth || 1,
+      H = stage.clientHeight || 1;
+    const view = (c) => [
+      (W / 2 - c.x) / c.scale,
+      (H / 2 - c.y) / c.scale,
+      W / c.scale,
+    ];
+    const [ux0, uy0, w0] = view(from),
+      [ux1, uy1, w1] = view(to);
+    const rho = 1.15,
+      rho2 = rho * rho,
+      rho4 = rho2 * rho2;
+    const dx = ux1 - ux0,
+      dy = uy1 - uy0,
+      d2 = dx * dx + dy * dy;
+    let S, at;
+    if (d2 < 1e-6) {
+      S = Math.log(w1 / w0) / rho;
+      at = (s) => [ux0 + s * dx, uy0 + s * dy, w0 * Math.exp(rho * s * S)];
+    } else {
+      const d1 = Math.sqrt(d2),
+        r0 = -Math.asinh(
+          (w1 * w1 - w0 * w0 + rho4 * d2) / (2 * w0 * rho2 * d1),
+        ),
+        r1 = -Math.asinh(
+          (w1 * w1 - w0 * w0 - rho4 * d2) / (2 * w1 * rho2 * d1),
+        ),
+        c0 = Math.cosh(r0);
+      S = (r1 - r0) / rho;
+      at = (s) => {
+        const q = rho * s * S + r0;
+        const u = (w0 / (rho2 * d1)) * (c0 * Math.tanh(q) - Math.sinh(r0));
+        return [ux0 + u * dx, uy0 + u * dy, (w0 * c0) / Math.cosh(q)];
+      };
+    }
+    const linear = (s) => ({
+      x: from.x + (to.x - from.x) * s,
+      y: from.y + (to.y - from.y) * s,
+      scale: from.scale + (to.scale - from.scale) * s,
+    });
+    if (!Number.isFinite(S)) return { duration: 600, camAt: linear };
+    return {
+      duration: clamp((Math.abs(S) * 1000 * rho) / Math.SQRT2, 560, 1100),
+      camAt(s) {
+        if (s >= 1) return { ...to };
+        const [cx, cy, width] = at(s),
+          scale = W / width;
+        const cam = { scale, x: W / 2 - cx * scale, y: H / 2 - cy * scale };
+        return Number.isFinite(cam.x + cam.y + cam.scale) ? cam : linear(s);
+      },
+    };
+  }
+  function transition(animate, target = null) {
+    cancelAnimationFrame(frame);
+    const to = target || targetCamera();
+    if (!camera || !animate || reduced.matches) {
+      camera = to;
+      travelling = false;
+      paint();
+      return;
+    }
+    const from = { ...camera },
+      path = flight(from, to),
+      began = performance.now();
+    travelling = true;
+    function tick(now) {
+      const u = clamp((now - began) / path.duration, 0, 1);
+      camera = path.camAt(easeInOut(u));
+      paint();
+      if (u < 1) frame = requestAnimationFrame(tick);
+      else travelling = false;
+    }
+    frame = requestAnimationFrame(tick);
+  }
+  function stopTravel() {
+    cancelAnimationFrame(frame);
+    travelling = false;
+    clearTip();
+  }
+  const project = (p) => ({
+    x: p.x * camera.scale + camera.x,
+    y: p.y * camera.scale + camera.y,
+  });
+
+  // ── Drawing ────────────────────────────────────────────────────────────
+  // The control offset that lifts a straight line clear of each emblem it
+  // would pass through (a quadratic curve moves 2t(1-t) of it at t).
+  function bow(a, b, keep) {
+    const dx = b.x - a.x,
+      dy = b.y - a.y,
+      len2 = dx * dx + dy * dy;
+    if (len2 < 1) return 0;
+    const len = Math.sqrt(len2),
+      nx = -dy / len,
+      ny = dx / len;
+    let best = 0;
+    for (const [p, r, drop] of keep) {
+      if (!p) continue;
+      const px = p.x,
+        py = p.y + drop;
+      const t = ((px - a.x) * dx + (py - a.y) * dy) / len2;
+      if (t < 0.1 || t > 0.9) continue;
+      const side = (px - a.x) * nx + (py - a.y) * ny;
+      if (Math.abs(side) >= r) continue;
+      const need =
+        ((r - Math.abs(side)) * (side > 0 ? -1 : 1)) / (2 * t * (1 - t));
+      if (Math.abs(need) > Math.abs(best)) best = need;
+    }
+    return clamp(best, -len * 0.6, len * 0.6);
+  }
+  function paint() {
+    if (!camera) return;
+    const w = stage.clientWidth,
+      h = stage.clientHeight,
+      screen = {};
+    if (sky && !reduced.matches) {
+      const shift = (v) => (14 * Math.tanh(v / 460)).toFixed(2) + "px";
+      sky.style.setProperty("--sky-pan-x", shift(camera.x - w / 2));
+      sky.style.setProperty("--sky-pan-y", shift(camera.y - h / 2));
+    }
+    stage.classList.toggle("distant", camera.scale < 0.5);
+    stage.classList.toggle("far-off", camera.scale < 0.66);
+    for (const [k, p] of Object.entries(world)) {
+      const v = project(p);
+      screen[k] = v;
+      const el = nodes.get(k);
+      el.style.transform =
+        "translate3d(" +
+        v.x.toFixed(2) +
+        "px," +
+        v.y.toFixed(2) +
+        "px,0) translate(-50%,-50%)";
+      el.tabIndex =
+        v.x >= 10 && v.x < w - 10 && v.y >= 8 && v.y < h - 10 ? 0 : -1;
+    }
+    // Relation lines bow around the emblems they would cross, so no line
+    // runs through a constellation it does not belong to.
+    const keep = [[screen.loop, 92, 8]];
+    for (const f of fields) keep.push([screen[fieldKey(f.id)], 62, 16]);
+    for (const e of links.values()) {
+      const a = screen[e.a],
+        b = screen[e.b];
+      let d = "M" + a.x + " " + a.y + "L" + b.x + " " + b.y,
+        mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      if (e.kind === "relation") {
+        const k = bow(a, b, keep);
+        if (k) {
+          const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+          const nx = -(b.y - a.y) / len,
+            ny = (b.x - a.x) / len;
+          const c = { x: mid.x + nx * k, y: mid.y + ny * k };
+          d =
+            "M" +
+            a.x +
+            " " +
+            a.y +
+            "Q" +
+            c.x +
+            " " +
+            c.y +
+            " " +
+            b.x +
+            " " +
+            b.y;
+          mid = { x: mid.x + (nx * k) / 2, y: mid.y + (ny * k) / 2 };
+        }
+      }
+      e.mid = mid;
+      e.hit.setAttribute("d", d);
+      e.ink.setAttribute("d", d);
+      e.gleam.setAttribute("d", d);
+      if (e.flow) {
+        e.flow.setAttribute("d", d);
+        const angle = (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
+        const at = { x: a.x + (b.x - a.x) * 0.55, y: a.y + (b.y - a.y) * 0.55 };
+        e.arrow.setAttribute(
+          "transform",
+          "translate(" + at.x + " " + at.y + ") rotate(" + angle + ")",
+        );
+      }
+      if (e.knot) {
+        e.knot.setAttribute("cx", mid.x);
+        e.knot.setAttribute("cy", mid.y);
+      }
+      e.group.setAttribute(
+        "tabindex",
+        mid.x > 0 &&
+          mid.x < w &&
+          mid.y > 0 &&
+          mid.y < h &&
+          !e.group.classList.contains("is-far")
+          ? "0"
+          : "-1",
+      );
+    }
+    const note = placeCard(screen, w, h);
+    positionPortals(screen, w, h, note);
+    placeCaption(screen, w, h);
+  }
+  function bounds(w, h) {
+    const r = mapRect();
+    return {
+      left: clamp(r.left - 4, 0, w - 1),
+      top: clamp(r.top - 4, 0, h - 1),
+      right: Math.max(r.left + 1, r.right + 4),
+      bottom: Math.max(r.top + 1, r.bottom + 4),
+    };
+  }
+  const overlaps = (a, b, gap = 0) =>
+    a.left < b.right + gap &&
+    a.right > b.left - gap &&
+    a.top < b.bottom + gap &&
+    a.bottom > b.top - gap;
+  function placeCard(screen, w, h) {
+    const line = $("#callout-line");
+    if (card.hidden || active.kind !== "paper") {
+      line.setAttribute("hidden", "");
+      return null;
+    }
+    const p = screen[paperKey(active.id)];
+    if (!p || p.x < -9 || p.x > w + 9 || p.y < -12 || p.y > h) {
+      card.style.visibility = "hidden";
+      line.setAttribute("hidden", "");
+      return null;
+    }
+    const room = bounds(w, h);
+    const usableWidth = room.right - room.left,
+      usableHeight = room.bottom - room.top;
+    card.style.maxWidth =
+      Math.floor(
+        card.classList.contains("topic")
+          ? Math.min(380, usableWidth)
+          : usableWidth,
+      ) + "px";
+    const width = card.offsetWidth,
+      gap = 40,
+      baseHeight = Math.min(usableHeight, h * 0.67);
+    const naturalHeight = Math.min(
+      baseHeight,
+      card.scrollHeight + card.offsetHeight - card.clientHeight,
+    );
+    const below = room.bottom - p.y - gap,
+      above = p.y - gap - room.top,
+      right = room.right - p.x - gap,
+      left = p.x - gap - room.left;
+    let side = "bottom",
+      limit = baseHeight;
+    if (below < naturalHeight) {
+      if (above >= naturalHeight) side = "top";
+      else if (Math.max(right, left) >= width)
+        side = right >= left ? "right" : "left";
+      else side = below >= above ? "bottom" : "top";
+    }
+    if (side === "top" || side === "bottom")
+      limit = Math.min(
+        baseHeight,
+        Math.max(Math.min(usableHeight, 170), side === "top" ? above : below),
+      );
+    card.style.maxHeight = Math.max(1, Math.floor(limit)) + "px";
+    const height = card.offsetHeight;
+    let x = p.x - width / 2,
+      y = side === "top" ? p.y - gap - height : p.y + gap;
+    if (side === "left" || side === "right") {
+      x = side === "left" ? p.x - gap - width : p.x + gap;
+      y = p.y - height / 2;
+    }
+    x = clamp(x, room.left, Math.max(room.left, room.right - width));
+    y = clamp(y, room.top, Math.max(room.top, room.bottom - height));
+    card.style.left = x + "px";
+    card.style.top = y + "px";
+    card.style.visibility = "";
+    const rect = { left: x, right: x + width, top: y, bottom: y + height };
+    const lx = clamp(p.x, rect.left, rect.right),
+      ly = clamp(p.y, rect.top, rect.bottom);
+    if (Math.hypot(lx - p.x, ly - p.y) < 2) line.setAttribute("hidden", "");
+    else {
+      line.removeAttribute("hidden");
+      line.setAttribute("d", "M" + p.x + " " + p.y + "L" + lx + " " + ly);
+    }
+    return rect;
+  }
+  // The question leans away from the emblem's papers, towards the loop's middle.
   function placeCaption(screen, w, h) {
     if (caption.hidden) return;
+    if (!wide.matches) {
+      caption.style.left = caption.style.top = caption.style.visibility = "";
+      caption.dataset.align = "left";
+      return;
+    }
     const key = fieldKey(active.id),
       p = screen[key],
       el = nodes.get(key);
-    if (!p || !el || p.x < 0 || p.x > w || p.y < 0 || p.y > h) {
+    if (!p || p.x < 0 || p.x > w || p.y < 0 || p.y > h) {
       caption.style.visibility = "hidden";
       return;
     }
@@ -741,7 +1297,7 @@
         p.y - r + (label ? label.offsetTop + label.offsetHeight : 0),
       ),
     };
-    const centre = screen.core || { x: w / 2, y: h / 2 };
+    const centre = screen.loop || { x: w / 2, y: h / 2 };
     let dx = centre.x - p.x,
       dy = centre.y - p.y;
     const length = Math.hypot(dx, dy);
@@ -752,18 +1308,13 @@
       Math.abs(dx) > 0.001 ? (box.right - cx) / Math.abs(dx) : Infinity,
       Math.abs(dy) > 0.001 ? (box.bottom - cy) / Math.abs(dy) : Infinity,
     );
-    const ax = cx + dx * (exit + 16),
-      ay = cy + dy * (exit + 16);
+    const ax = cx + dx * (exit + 18),
+      ay = cy + dy * (exit + 18);
     const align = dx > 0.45 ? "left" : dx < -0.45 ? "right" : "center";
-    if (caption.dataset.align !== align) {
-      caption.dataset.align = align;
-      caption.style.textAlign = align;
-    }
+    if (caption.dataset.align !== align) caption.dataset.align = align;
     const cw = caption.offsetWidth,
       ch = caption.offsetHeight,
-      room = readingBounds(w, h);
-    // Lean the text away from the emblem: an edge touches the anchor unless the
-    // direction is nearly perpendicular, in which case the text centres on it.
+      room = bounds(w, h);
     const x = dx > 0.45 ? ax : dx < -0.45 ? ax - cw : ax - cw / 2;
     const y = dy > 0.45 ? ay : dy < -0.45 ? ay - ch : ay - ch / 2;
     caption.style.left =
@@ -772,232 +1323,10 @@
       clamp(y, room.top, Math.max(room.top, room.bottom - ch)) + "px";
     caption.style.visibility = "";
   }
-  const SVG = "http://www.w3.org/2000/svg";
-  function svg(tag, attrs = {}) {
-    const el = document.createElementNS(SVG, tag);
-    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
-    return el;
-  }
-  function graphLinks(keys) {
-    const all = [];
-    function add(a, b, id, title, detail, kind) {
-      if (keys.has(a) && keys.has(b))
-        all.push({ a, b, id, title, detail, kind });
-    }
-    for (const f of fields)
-      for (const p of f.papers)
-        add(
-          fieldKey(f.id),
-          paperKey(p),
-          p,
-          l(CAT[p].short),
-          l(CAT[p].relation),
-          "field",
-        );
-    for (const r of PAPER_RELATIONS)
-      if (read.has(r.a) || read.has(r.b))
-        add(
-          paperKey(r.a),
-          paperKey(r.b),
-          r.a + "--" + r.b,
-          l(r.label),
-          l(r.text),
-          "paper",
-        );
-    if (theoryOpen)
-      for (const id of concepts)
-        add(
-          "core",
-          theoryKey(id),
-          "lens-" + id,
-          t(id),
-          t("concepts"),
-          "theory",
-        );
-    if (active.kind === "concept" || theoryOpen)
-      for (const id of read) {
-        const lens = lenses[id];
-        if (lens)
-          add(
-            paperKey(id),
-            theoryKey(lens[0]),
-            "theory-paper-" + id,
-            l(lens[2]),
-            l(CAT[id].short),
-            "theory",
-          );
-      }
-    return all;
-  }
-  function syncLinks(data, animate) {
-    const retained = new Set(data.map((e) => e.id));
-    for (const [id, e] of links)
-      if (!retained.has(id)) {
-        if (animate && !reduced.matches) {
-          const path = e.ink.cloneNode();
-          path.setAttribute("class", "folding-link");
-          path.setAttribute("pathLength", "1");
-          map.prepend(path);
-          ghostLinks.add(path);
-          const anim = path.animate(
-            [
-              { strokeDashoffset: 0, opacity: 0.7 },
-              { strokeDashoffset: 1, opacity: 0 },
-            ],
-            { duration: 240, easing: "ease-in" },
-          );
-          anim.onfinish = () => {
-            path.remove();
-            ghostLinks.delete(path);
-          };
-        }
-        e.group.remove();
-        links.delete(id);
-      }
-    for (const dataLink of data) {
-      let item = links.get(dataLink.id);
-      if (!item) {
-        const group = svg("g", {
-          class: "edge " + dataLink.kind + "-edge",
-          role: "button",
-          tabindex: "0",
-          "data-id": dataLink.id,
-        });
-        group.setAttribute(
-          dataLink.kind === "paper" ? "data-pair" : "data-edge",
-          dataLink.id,
-        );
-        const hit = svg("path", { class: "hit" }),
-          ink = svg("path", { class: "domain-link" }),
-          gleam = svg("path", { class: "gleam", pathLength: 100 }),
-          spark = svg("circle", { class: "travel-light", r: 3 });
-        group.append(hit, ink, gleam, spark);
-        // A knot at the midpoint shows that a paper-to-paper line can be read.
-        const knot =
-          dataLink.kind === "paper"
-            ? svg("circle", { class: "knot", r: 5.5 })
-            : null;
-        if (knot) group.append(knot);
-        $("#edges").append(group);
-        item = {
-          group,
-          hit,
-          ink,
-          gleam,
-          spark,
-          knot,
-          ...dataLink,
-          born: animate ? performance.now() : -10000,
-        };
-        links.set(dataLink.id, item);
-      } else Object.assign(item, dataLink);
-      item.group.setAttribute("aria-label", dataLink.title);
-      item.group.classList.toggle(
-        "focus-link",
-        item.a === currentFocus || item.b === currentFocus,
-      );
-    }
-  }
-  function project(w, cam = camera) {
-    return { x: w.x * cam.scale + cam.x, y: w.y * cam.scale + cam.y };
-  }
-  function readingBounds(w, h) {
-    const cut = viewportInsets();
-    const margin = 7;
-    const left = clamp(cut.left + margin, 0, w - 1);
-    const top = clamp(cut.top + margin, 0, h - 1);
-    return {
-      left,
-      top,
-      right: Math.max(left + 1, w - cut.right - margin),
-      bottom: Math.max(top + 1, h - cut.bottom - margin),
-    };
-  }
-  function overlaps(a, b, gap = 0) {
-    return (
-      a.left < b.right + gap &&
-      a.right > b.left - gap &&
-      a.top < b.bottom + gap &&
-      a.bottom > b.top - gap
-    );
-  }
-  function displayNote() {
-    const el = !card.hidden ? card : !theory.hidden ? theory : null;
-    const line = $("#callout-line");
-    if (!el || !world[currentFocus]) {
-      line.setAttribute("hidden", "");
-      return;
-    }
-    const p = project(world[currentFocus]);
-    const w = stage.clientWidth,
-      h = stage.clientHeight;
-    if (p.x < -9 || p.x > w + 9 || p.y < -12 || p.y > h) {
-      el.style.visibility = "hidden";
-      line.setAttribute("hidden", "");
-      return;
-    }
-    const room = readingBounds(w, h);
-    const usableWidth = room.right - room.left,
-      usableHeight = room.bottom - room.top;
-    const topic = el === card && el.classList.contains("topic");
-    el.style.maxWidth =
-      Math.floor(topic ? Math.min(380, usableWidth) : usableWidth) + "px";
-    const width = el.offsetWidth;
-    const gap = el === theory ? 42 : 40;
-    const baseHeight = Math.min(
-      usableHeight,
-      el === theory ? Math.min(540, h * 0.71) : h * 0.67,
-    );
-    const naturalHeight = Math.min(
-      baseHeight,
-      el.scrollHeight + el.offsetHeight - el.clientHeight,
-    );
-    const below = room.bottom - p.y - gap,
-      above = p.y - gap - room.top;
-    const right = room.right - p.x - gap,
-      left = p.x - gap - room.left;
-    let side = "bottom",
-      limit = baseHeight;
-    if (below < naturalHeight) {
-      if (above >= naturalHeight) side = "top";
-      else if (Math.max(right, left) >= width)
-        side = right >= left ? "right" : "left";
-      else side = below >= above ? "bottom" : "top";
-    }
-    // Reserve a usable scroll viewport on a small phone even with the anchor near mid-screen.
-    if (side === "top" || side === "bottom") {
-      const slot = side === "top" ? above : below;
-      const minimum = Math.min(usableHeight, el === theory ? 230 : 170);
-      limit = Math.min(baseHeight, Math.max(minimum, slot));
-    }
-    el.style.maxHeight = Math.max(1, Math.floor(limit)) + "px";
-    const height = el.offsetHeight;
-    let x = p.x - width / 2;
-    let y = side === "top" ? p.y - gap - height : p.y + gap;
-    if (side === "left" || side === "right") {
-      x = side === "left" ? p.x - gap - width : p.x + gap;
-      y = p.y - height / 2;
-    }
-    x = clamp(x, room.left, Math.max(room.left, room.right - width));
-    y = clamp(y, room.top, Math.max(room.top, room.bottom - height));
-    el.style.left = x + "px";
-    el.style.top = y + "px";
-    el.style.visibility = "";
-    const rect = { left: x, right: x + width, top: y, bottom: y + height };
-    const lineX = clamp(p.x, rect.left, rect.right),
-      lineY = clamp(p.y, rect.top, rect.bottom);
-    if (Math.hypot(lineX - p.x, lineY - p.y) < 2)
-      line.setAttribute("hidden", "");
-    else {
-      line.removeAttribute("hidden");
-      line.setAttribute("d", "M" + p.x + " " + p.y + "L" + lineX + " " + lineY);
-    }
-    return rect;
-  }
+  // Connected papers that fall outside the view stay reachable at its edge.
   function syncPortals() {
-    const nav = $("#portals");
-    nav.replaceChildren();
-    nav.setAttribute("aria-label", t("connections"));
+    portals.replaceChildren();
+    portals.setAttribute("aria-label", t("connections"));
     if (active.kind !== "paper" || indexOpen) return;
     for (const r of pairs(active.id)) {
       const id = other(r, active.id),
@@ -1010,14 +1339,13 @@
       a.textContent = l(CAT[id].short);
       a.setAttribute("aria-label", l(CAT[id].short) + " · " + l(r.label));
       a.hidden = true;
-      nav.append(a);
+      portals.append(a);
     }
   }
   function positionPortals(screen, w, h, note) {
-    const portals = $("#portals").children,
-      anchor = screen[currentFocus];
-    if (!portals.length || !anchor) return;
-    const room = readingBounds(w, h);
+    const anchor = screen[paperKey(active.id)];
+    if (!portals.children.length || !anchor) return;
+    const room = bounds(w, h);
     const occupied = [
       {
         left: anchor.x - 56,
@@ -1027,7 +1355,7 @@
       },
     ];
     if (note) occupied.push(note);
-    for (const portal of portals) {
+    for (const portal of portals.children) {
       const target = screen[paperKey(portal.dataset.jump)];
       const inRoom =
         target &&
@@ -1041,26 +1369,18 @@
         top: target.y - 11,
         bottom: target.y + 15,
       };
-      if (
-        !target ||
-        (inRoom && !(note && overlaps(nodeRect, note))) ||
-        anchor.x < 0 ||
-        anchor.x > w ||
-        anchor.y < 0 ||
-        anchor.y > h
-      ) {
+      if (!target || (inRoom && !(note && overlaps(nodeRect, note)))) {
         portal.hidden = true;
         continue;
       }
       portal.hidden = false;
-      portal.style.width = "max-content";
       portal.style.maxWidth =
-        Math.min(128, Math.floor(room.right - room.left)) + "px";
+        Math.min(140, Math.floor(room.right - room.left)) + "px";
       const hw = portal.offsetWidth / 2,
         hh = portal.offsetHeight / 2;
       const xmin = room.left + hw,
-        xmax = room.right - hw;
-      const ymin = room.top + hh,
+        xmax = room.right - hw,
+        ymin = room.top + hh,
         ymax = room.bottom - hh;
       if (xmax < xmin || ymax < ymin) {
         portal.hidden = true;
@@ -1081,26 +1401,21 @@
             y: clamp(ay + dy * factor, ymin, ymax),
           }
         : { x: xmax, y: ay };
-      const options = [
-        ideal,
-        { x: xmin, y: ymax },
-        { x: xmax, y: ymax },
-        { x: xmax, y: ymin },
-      ];
+      const options = [ideal];
       for (let y = ymin; y <= ymax; y += Math.max(12, hh))
         options.push({ x: xmin, y }, { x: xmax, y });
       for (let x = xmin; x <= xmax; x += Math.max(22, hw))
         options.push({ x, y: ymin }, { x, y: ymax });
-      const d = (p) => Math.hypot(p.x - ideal.x, p.y - ideal.y);
-      options.sort((a, b) => d(a) - d(b));
-      const rect = (p) => ({
-        left: p.x - hw,
-        right: p.x + hw,
-        top: p.y - hh,
-        bottom: p.y + hh,
+      const dist = (q) => Math.hypot(q.x - ideal.x, q.y - ideal.y);
+      options.sort((a, b) => dist(a) - dist(b));
+      const rect = (q) => ({
+        left: q.x - hw,
+        right: q.x + hw,
+        top: q.y - hh,
+        bottom: q.y + hh,
       });
-      const pos = options.find((p) =>
-        occupied.every((r) => !overlaps(rect(p), r, 5)),
+      const pos = options.find((q) =>
+        occupied.every((o) => !overlaps(rect(q), o, 5)),
       );
       if (!pos) {
         portal.hidden = true;
@@ -1115,153 +1430,29 @@
       );
     }
   }
-  function paint(now = performance.now()) {
-    const w = stage.clientWidth,
-      h = stage.clientHeight,
-      screen = {};
-    if (sky && !reduced.matches) {
-      const shift = (value) => (14 * Math.tanh(value / 460)).toFixed(2) + "px";
-      sky.style.setProperty("--sky-pan-x", shift(camera.x - w / 2));
-      sky.style.setProperty("--sky-pan-y", shift(camera.y - h / 2));
-    }
-    stage.classList.toggle("distant", camera.scale < 0.5);
-    for (const [k, p] of Object.entries(world)) {
-      const v = project(p);
-      screen[k] = v;
-      const el = nodes.get(k);
-      if (!el) continue;
-      el.style.transform =
-        "translate3d(" +
-        v.x.toFixed(2) +
-        "px," +
-        v.y.toFixed(2) +
-        "px,0) translate(-50%,-50%)";
-      el.tabIndex =
-        visibleKeys.has(k) &&
-        v.x >= 10 &&
-        v.x < w - 10 &&
-        v.y >= 8 &&
-        v.y < h - 10
-          ? 0
-          : -1;
-    }
-    const vertices = [0, 2, 4, 1, 3].map((i) => screen[fieldKey(fields[i].id)]);
-    if (vertices.every(Boolean))
-      $("#pentagram").setAttribute(
-        "d",
-        vertices.map((v, i) => (i ? "L" : "M") + v.x + " " + v.y).join(" ") +
-          "Z",
-      );
-    for (const e of links.values()) {
-      const a = screen[e.a],
-        b = screen[e.b];
-      if (!a || !b) continue;
-      const duration = reduced.matches ? 0 : 495,
-        u = duration ? clamp((now - e.born) / duration, 0, 1) : 1;
-      const direction = active.kind === "paper" && e.b === currentFocus,
-        from = direction ? b : a,
-        to = direction ? a : b;
-      const tx = from.x + (to.x - from.x) * u,
-        ty = from.y + (to.y - from.y) * u;
-      const d = "M" + from.x + " " + from.y + "L" + tx + " " + ty;
-      for (const path of [e.hit, e.ink, e.gleam]) path.setAttribute("d", d);
-      e.spark.style.opacity = u < 1 ? Math.sin(Math.PI * u) : 0;
-      e.spark.setAttribute("cx", tx);
-      e.spark.setAttribute("cy", ty);
-      const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-      if (e.knot) {
-        e.knot.setAttribute("cx", mid.x);
-        e.knot.setAttribute("cy", mid.y);
-        e.knot.style.opacity = u < 1 ? 0 : "";
-      }
-      e.group.setAttribute(
-        "tabindex",
-        mid.x > 0 && mid.x < w && mid.y > 0 && mid.y < h ? "0" : "-1",
-      );
-    }
-    const note = displayNote();
-    positionPortals(screen, w, h, note);
-    placeCaption(screen, w, h);
-  }
+
+  // ── Tips and previews ──────────────────────────────────────────────────
   function clearTip() {
     pinned = null;
     previewKey = null;
     tip.hidden = true;
     tip.classList.remove("node-tip");
-    for (const e of links.values()) {
-      e.group.classList.remove("hot");
-      e.group.removeAttribute("aria-describedby");
-    }
+    for (const e of links.values()) e.group.classList.remove("hot");
   }
-  function showTip(e, pin = false) {
-    clearTip();
-    if (!e || !world[e.a] || !world[e.b]) return;
-    if (pin) pinned = e.id;
-    e.group.classList.add("hot");
-    e.group.setAttribute("aria-describedby", "tip");
-    tip.innerHTML = "<strong>" + esc(e.title) + "</strong>" + esc(e.detail);
-    const room = readingBounds(stage.clientWidth, stage.clientHeight);
-    tip.style.maxWidth = Math.min(285, room.right - room.left) + "px";
-    tip.style.maxHeight = Math.floor(room.bottom - room.top) + "px";
-    tip.style.overflowY = "auto";
+  function placeTip(box, avoid) {
+    const room = bounds(stage.clientWidth, stage.clientHeight);
+    tip.style.maxWidth = Math.min(300, room.right - room.left) + "px";
     tip.hidden = false;
     const width = tip.offsetWidth,
-      height = tip.offsetHeight;
-    const scrollable = pin && tip.scrollHeight > tip.clientHeight + 1;
-    tip.style.pointerEvents = scrollable ? "auto" : "";
-    tip.style.touchAction = scrollable ? "pan-y" : "";
-    tip.tabIndex = scrollable ? 0 : -1;
-    tip.onpointerdown = tip.onwheel = scrollable
-      ? (event) => event.stopPropagation()
-      : null;
-    const a = project(world[e.a]),
-      b = project(world[e.b]);
-    const mid = {
-      x: clamp((a.x + b.x) / 2, room.left, room.right),
-      y: clamp((a.y + b.y) / 2, room.top, room.bottom),
-    };
-    const note = !card.hidden ? card : !theory.hidden ? theory : null;
-    const avoid = [];
-    const noteRect =
-      note && note.style.visibility !== "hidden"
-        ? {
-            left: note.offsetLeft,
-            right: note.offsetLeft + note.offsetWidth,
-            top: note.offsetTop,
-            bottom: note.offsetTop + note.offsetHeight,
-          }
-        : null;
-    if (noteRect) avoid.push(noteRect);
-    const around = (p, r) => ({
-      left: p.x - r,
-      right: p.x + r,
-      top: p.y - r,
-      bottom: p.y + r,
-    });
-    avoid.push(around(a, 22), around(b, 22), around(mid, 9));
-    const candidates = [
-      { x: mid.x - width / 2, y: mid.y - height - 10 },
-      { x: mid.x - width / 2, y: mid.y + 10 },
-      { x: mid.x + 12, y: mid.y - height / 2 },
-      { x: mid.x - width - 12, y: mid.y - height / 2 },
-    ];
-    for (const f of [0.25, 0.75]) {
-      const q = { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
-      candidates.push(
-        { x: q.x - width / 2, y: q.y - height - 10 },
-        { x: q.x - width / 2, y: q.y + 10 },
-      );
-    }
-    if (noteRect) {
-      const r = noteRect;
-      candidates.push(
-        { x: mid.x - width / 2, y: r.top - height - 6 },
-        { x: mid.x - width / 2, y: r.bottom + 6 },
-        { x: r.left - width - 6, y: mid.y - height / 2 },
-        { x: r.right + 6, y: mid.y - height / 2 },
-      );
-    }
-    const fits = candidates.map((p) => {
+      height = tip.offsetHeight,
+      cx = (box.left + box.right) / 2,
+      cy = (box.top + box.bottom) / 2;
+    const fits = [
+      { x: cx - width / 2, y: box.top - height - 10 },
+      { x: cx - width / 2, y: box.bottom + 10 },
+      { x: box.right + 12, y: cy - height / 2 },
+      { x: box.left - width - 12, y: cy - height / 2 },
+    ].map((p) => {
       const x = clamp(p.x, room.left, Math.max(room.left, room.right - width));
       const y = clamp(p.y, room.top, Math.max(room.top, room.bottom - height));
       return { left: x, right: x + width, top: y, bottom: y + height };
@@ -1271,48 +1462,67 @@
     tip.style.left = pos.left + "px";
     tip.style.top = pos.top + "px";
   }
-  // Hovering a node previews what selecting it would open.
+  function noteRect() {
+    if (card.hidden || card.style.visibility === "hidden") return null;
+    return {
+      left: card.offsetLeft,
+      right: card.offsetLeft + card.offsetWidth,
+      top: card.offsetTop,
+      bottom: card.offsetTop + card.offsetHeight,
+    };
+  }
+  function showTip(e, pin = false) {
+    clearTip();
+    if (pin) pinned = e.id;
+    e.group.classList.add("hot");
+    const [title, detail] = e.words();
+    tip.innerHTML = "<strong>" + esc(title) + "</strong>" + esc(detail);
+    const a = project(world[e.a]),
+      b = project(world[e.b]);
+    const mid = e.mid || { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    const around = (p, r) => ({
+      left: p.x - r,
+      right: p.x + r,
+      top: p.y - r,
+      bottom: p.y + r,
+    });
+    const avoid = [around(a, 24), around(b, 24)];
+    const note = noteRect();
+    if (note) avoid.push(note);
+    placeTip({ left: mid.x, right: mid.x, top: mid.y, bottom: mid.y }, avoid);
+  }
   function previewOf(key) {
-    if (key === "core") return [t("foundation"), t("anthropology"), t("intro")];
+    if (key === "loop") return [t("loopName"), t("startLoop"), t("loopLine")];
     if (key.startsWith("field-")) {
-      const f = fieldById[key.slice(6)];
-      return f && [l(f.guardian), l(f.name), l(question[f.id])];
+      const f = fieldById[keyId(key)];
+      return [mark(f) + " " + l(f.step), l(f.name), l(f.question)];
     }
-    if (key.startsWith("paper-")) {
-      const item = CAT[key.slice(6)];
-      return (
-        item && [
-          t(item.links.length ? "paperKind" : "topicKind"),
-          l(item.title),
-          l(item.relation),
-        ]
-      );
-    }
-    return null;
+    const item = CAT[keyId(key)];
+    return [
+      t(item.links.length ? "paperKind" : "topicKind"),
+      l(item.title),
+      l(item.relation),
+    ];
   }
   function showPreview(el) {
     const key = el?.dataset.key;
     if (!key || key === previewKey || pinned || dragging || travelling) return;
-    if (key === currentFocus && active.kind !== "home") return;
-    const info = previewOf(key);
-    if (!info) return;
+    if (
+      (active.kind === "field" && key === fieldKey(active.id)) ||
+      (active.kind === "paper" && key === paperKey(active.id) && showNote)
+    )
+      return;
+    const [kind, title, text] = previewOf(key);
     clearTip();
     previewKey = key;
     tip.classList.add("node-tip");
     tip.innerHTML =
       "<small>" +
-      esc(info[0]) +
+      esc(kind) +
       "</small><strong>" +
-      esc(info[1]) +
+      esc(title) +
       "</strong>" +
-      esc(info[2]);
-    const room = readingBounds(stage.clientWidth, stage.clientHeight);
-    tip.style.maxWidth = Math.min(300, room.right - room.left) + "px";
-    tip.style.maxHeight = "";
-    tip.style.overflowY = "";
-    tip.style.pointerEvents = "";
-    tip.tabIndex = -1;
-    tip.hidden = false;
+      esc(text);
     const s = stage.getBoundingClientRect();
     const box = {
       left: Infinity,
@@ -1328,33 +1538,10 @@
       box.top = Math.min(box.top, r.top - s.top);
       box.bottom = Math.max(box.bottom, r.bottom - s.top);
     }
-    const width = tip.offsetWidth,
-      height = tip.offsetHeight,
-      cx = (box.left + box.right) / 2,
-      cy = (box.top + box.bottom) / 2;
-    const note = !card.hidden ? card : !theory.hidden ? theory : null;
     const avoid = [box];
-    if (note && note.style.visibility !== "hidden")
-      avoid.push({
-        left: note.offsetLeft,
-        right: note.offsetLeft + note.offsetWidth,
-        top: note.offsetTop,
-        bottom: note.offsetTop + note.offsetHeight,
-      });
-    const fits = [
-      { x: cx - width / 2, y: box.top - height - 8 },
-      { x: cx - width / 2, y: box.bottom + 8 },
-      { x: box.right + 10, y: cy - height / 2 },
-      { x: box.left - width - 10, y: cy - height / 2 },
-    ].map((p) => {
-      const x = clamp(p.x, room.left, Math.max(room.left, room.right - width));
-      const y = clamp(p.y, room.top, Math.max(room.top, room.bottom - height));
-      return { left: x, right: x + width, top: y, bottom: y + height };
-    });
-    const pos =
-      fits.find((r) => avoid.every((n) => !overlaps(r, n, 2))) || fits[0];
-    tip.style.left = pos.left + "px";
-    tip.style.top = pos.top + "px";
+    const note = noteRect();
+    if (note) avoid.push(note);
+    placeTip(box, avoid);
   }
   function hidePreview() {
     if (!previewKey) return;
@@ -1362,308 +1549,88 @@
     tip.hidden = true;
     tip.classList.remove("node-tip");
   }
-  // Rows in the reading surfaces light up the line and star they lead to.
   function linkPreview(target, on) {
-    const row = target.closest?.("[data-paper],[data-field]");
-    if (!row || row.closest("#theory")) return;
-    if (row.dataset.field) {
+    const row = target.closest?.("[data-paper],[data-field],[data-target]");
+    if (!row || row.closest("#theory-inner")) return;
+    const ref = row.dataset.target;
+    if (ref?.startsWith("field/") || row.dataset.field) {
       nodes
-        .get(fieldKey(row.dataset.field))
-        ?.classList.toggle("is-preview", on);
+        .get(fieldKey(row.dataset.field || ref.slice(6)))
+        ?.classList.toggle("is-lit", on);
       return;
     }
+    if (ref) return;
     const id = row.dataset.paper;
-    links.get(row.dataset.pair || id)?.group.classList.toggle("linked", on);
-    nodes.get(paperKey(id))?.classList.toggle("is-preview", on);
+    links
+      .get(row.dataset.pair || "member-" + id)
+      ?.group.classList.toggle("is-lit", on);
+    nodes.get(paperKey(id))?.classList.toggle("is-lit", on);
   }
-  function clearLinkPreviews() {
-    for (const e of links.values()) e.group.classList.remove("linked");
-    for (const n of nodes.values()) n.classList.remove("is-preview");
-  }
-  function noteMetrics() {
-    const node = !card.hidden ? card : !theory.hidden ? theory : null;
-    noteSize = node
-      ? { w: node.offsetWidth, h: node.offsetHeight }
-      : { w: 0, h: 0 };
-  }
-  function measureViewport() {
-    const w = stage.clientWidth,
-      h = stage.clientHeight;
-    const headRect = header.getBoundingClientRect();
-    const footRect = toolbar.getBoundingClientRect();
-    const tourBottom = tourBar.hidden
-      ? 0
-      : tourBar.getBoundingClientRect().bottom;
-    insets = {
-      left: Math.min(16, headRect.left),
-      right: Math.min(16, w - headRect.right),
-      top: Math.ceil(Math.max(headRect.bottom, tourBottom) + 8),
-      bottom: Math.ceil(h - footRect.top + 8),
-    };
-    const stacked = w <= 680 && h > w * 0.9;
-    homeInsets = mast.inert
-      ? {}
-      : stacked
-        ? { top: mast.offsetTop + mast.offsetHeight + 5 }
-        : { left: Math.round(mast.offsetLeft + mast.offsetWidth * 0.77) };
-    atlas.style.setProperty("--map-safe-top", insets.top + "px");
-    atlas.style.setProperty("--map-safe-bottom", insets.bottom + "px");
+
+  // ── Measuring and updating ─────────────────────────────────────────────
+  let surfaceSize = "";
+  function measure() {
+    const headBottom = Math.ceil(header.getBoundingClientRect().bottom);
+    document.body.style.setProperty("--head-h", headBottom + 6 + "px");
+    const sheet = wide.matches ? 0 : stage.clientHeight - rail.offsetTop;
+    document.body.style.setProperty("--sheet-h", Math.max(0, sheet) + "px");
+    const r = mapRect();
+    const wasTall = tall;
+    // On narrow screens the sky keeps one orientation while the sheet moves.
+    tall = wide.matches
+      ? (r.right - r.left) / Math.max(1, r.bottom - r.top) < 0.85
+      : stage.clientWidth / Math.max(1, stage.clientHeight) < 0.85;
+    if (tall !== wasTall || !Object.keys(world).length) placeWorld();
+    // A thin band of sky (an open sheet) shows the stars without their words.
+    stage.classList.toggle("cramped", r.bottom - r.top < 300);
+    atlas.style.setProperty("--map-left", r.left - 12 + "px");
+    atlas.style.setProperty("--map-safe-top", r.top - 10 + "px");
+    atlas.style.setProperty(
+      "--map-safe-bottom",
+      stage.clientHeight - r.bottom - 10 + "px",
+    );
     surfaceSize = [
-      w,
-      h,
-      insets.top,
-      insets.bottom,
-      homeInsets.top || 0,
-      homeInsets.left || 0,
+      stage.clientWidth,
+      stage.clientHeight,
+      r.left,
+      r.top,
+      r.bottom,
+      tall,
     ].join("/");
   }
-  function syncIntro() {
-    const visible = active.kind === "home" && !indexOpen && !introDismissed;
-    mast.inert = !visible;
-    atlas.classList.toggle("has-intro", visible);
-  }
-  function dismissIntro() {
-    if (mast.inert) return;
-    introDismissed = true;
-    syncIntro();
-    measureViewport();
-  }
-  function compute() {
-    const peers = new Set(read);
-    for (const id of read) for (const r of pairs(id)) peers.add(other(r, id));
-    return window.constellationSpace.layout({
-      width: stage.clientWidth,
-      height: stage.clientHeight,
-      mobile: innerWidth <= 680,
-      viewportInsets: viewportInsets(),
-      homeInsets,
-      fields,
-      groups,
-      peers,
-      relations: PAPER_RELATIONS,
-      focus: active,
-      cardHeight: noteSize.h,
-      theoryOpen,
-    });
-  }
-  // A camera flight follows van Wijk and Nuij's smooth zoom: a long move widens
-  // the view slightly, travels, then settles, so the visual centre glides.
-  function flight(from, to) {
-    const W = stage.clientWidth || 1,
-      H = stage.clientHeight || 1;
-    const view = (c) => [
-      (W / 2 - c.x) / c.scale,
-      (H / 2 - c.y) / c.scale,
-      W / c.scale,
-    ];
-    const [ux0, uy0, w0] = view(from),
-      [ux1, uy1, w1] = view(to);
-    const rho = 1.15,
-      rho2 = rho * rho,
-      rho4 = rho2 * rho2;
-    const dx = ux1 - ux0,
-      dy = uy1 - uy0,
-      d2 = dx * dx + dy * dy;
-    let S, at;
-    if (d2 < 1e-6) {
-      S = Math.log(w1 / w0) / rho;
-      at = (t) => [ux0 + t * dx, uy0 + t * dy, w0 * Math.exp(rho * t * S)];
-    } else {
-      const d1 = Math.sqrt(d2),
-        r0 = -Math.asinh(
-          (w1 * w1 - w0 * w0 + rho4 * d2) / (2 * w0 * rho2 * d1),
-        ),
-        r1 = -Math.asinh(
-          (w1 * w1 - w0 * w0 - rho4 * d2) / (2 * w1 * rho2 * d1),
-        ),
-        c0 = Math.cosh(r0);
-      S = (r1 - r0) / rho;
-      at = (t) => {
-        const s = rho * t * S + r0;
-        const u = (w0 / (rho2 * d1)) * (c0 * Math.tanh(s) - Math.sinh(r0));
-        return [ux0 + u * dx, uy0 + u * dy, (w0 * c0) / Math.cosh(s)];
-      };
-    }
-    const linear = (t) => ({
-      x: from.x + (to.x - from.x) * t,
-      y: from.y + (to.y - from.y) * t,
-      scale: from.scale + (to.scale - from.scale) * t,
-    });
-    if (!Number.isFinite(S)) return { duration: 570, camAt: linear };
-    return {
-      duration: clamp((Math.abs(S) * 1000 * rho) / Math.SQRT2, 560, 1100),
-      camAt(t) {
-        if (t >= 1) return { ...to };
-        const [cx, cy, width] = at(t),
-          scale = W / width;
-        const cam = { scale, x: W / 2 - cx * scale, y: H / 2 - cy * scale };
-        return Number.isFinite(cam.x + cam.y + cam.scale) ? cam : linear(t);
-      },
-    };
-  }
-  function transition(animate, savedCamera = null, holdCamera = false) {
-    cancelAnimationFrame(frame);
-    const result = compute();
-    layoutResult = result;
-    currentFocus = focusKey(active);
-    visibleKeys = new Set(Object.keys(result.points));
-    const fromCam = camera ? { ...camera } : { ...result.camera },
-      toCam =
-        savedCamera === "fit"
-          ? result.fitCamera
-          : savedCamera || (holdCamera && camera ? camera : result.camera);
-    const previous = world,
-      starts = {},
-      ends = {},
-      leaving = [],
-      delays = {},
-      siblings = {};
-    const path = flight(fromCam, toCam);
-    for (const [k, node] of nodes) {
-      if (visibleKeys.has(k)) {
-        const parent = node.dataset.project
-          ? fieldKey(owner[node.dataset.project].id)
-          : "core";
-        const bornAt =
-          active.kind === "paper" &&
-          node.dataset.project &&
-          node.dataset.project !== active.id
-            ? currentFocus
-            : parent;
-        starts[k] =
-          previous[k] ||
-          previous[bornAt] ||
-          result.world[bornAt] ||
-          result.world[k];
-        ends[k] = result.world[k];
-        node.hidden = false;
-        node.inert = false;
-        if (arrivals.has(node)) {
-          arrivals.get(node).cancel();
-          arrivals.delete(node);
-        }
-        blooms.get(node)?.cancel();
-        if (!previous[k] && animate && !reduced.matches) {
-          // Siblings unfold one after another rather than all at once.
-          const order = (siblings[bornAt] = (siblings[bornAt] ?? -1) + 1);
-          delays[k] = Math.min(0.3, order * 0.085);
-          const delay = delays[k] * path.duration;
-          arrivals.set(
-            node,
-            node.animate(
-              [
-                { opacity: 0, offset: 0 },
-                { opacity: 0, offset: 0.11 },
-                { opacity: 1 },
-              ],
-              { duration: 420, delay, fill: "backwards" },
-            ),
-          );
-          const mark = node.querySelector(".coin,.star,.theory-dot");
-          if (mark)
-            blooms.set(
-              node,
-              mark.animate(
-                [{ scale: 0.3 }, { scale: 1.14, offset: 0.68 }, { scale: 1 }],
-                {
-                  duration: 560,
-                  delay,
-                  easing: "cubic-bezier(.2,.7,.3,1)",
-                  fill: "backwards",
-                },
-              ),
-            );
-        }
-      } else if (previous[k] && animate && !reduced.matches) {
-        const parent = node.dataset.project
-          ? fieldKey(owner[node.dataset.project].id)
-          : "core";
-        starts[k] = previous[k];
-        ends[k] = result.world[parent] || previous[k];
-        leaving.push(k);
-        node.inert = true;
-        arrivals.get(node)?.cancel();
-        arrivals.set(
-          node,
-          node.animate([{ opacity: 1 }, { opacity: 0 }], {
-            duration: 200,
-            fill: "forwards",
-          }),
-        );
-      } else node.hidden = true;
-      if (visibleKeys.has(k))
-        for (const anim of node.getAnimations())
-          if (anim.playState === "finished") anim.cancel();
-    }
-    syncLinks(graphLinks(visibleKeys), animate);
-    travelling = animate && !reduced.matches;
-    if (!travelling) {
-      camera = { ...toCam };
-      world = Object.fromEntries(
-        [...visibleKeys].map((k) => [k, result.world[k]]),
-      );
-      paint();
-      return;
-    }
-    const began = performance.now(),
-      duration = path.duration;
-    function tick(now) {
-      const u = clamp((now - began) / duration, 0, 1),
-        e = easeInOut(u);
-      camera = path.camAt(e);
-      world = {};
-      for (const [k, end] of Object.entries(ends)) {
-        const s = starts[k],
-          d = delays[k] || 0,
-          v = leaving.includes(k)
-            ? Math.min(1, u * 2.6)
-            : k in delays
-              ? easeOut(clamp((u - d) / (1 - d), 0, 1))
-              : e;
-        if (v === 1 && leaving.includes(k)) {
-          nodes.get(k).hidden = true;
-          continue;
-        }
-        world[k] = { x: s.x + (end.x - s.x) * v, y: s.y + (end.y - s.y) * v };
-      }
-      paint(now);
-      if (u < 1) frame = requestAnimationFrame(tick);
-      else travelling = false;
-    }
-    frame = requestAnimationFrame(tick);
-  }
-  function update(animate = true, savedCam = null) {
+  function update(animate = true) {
     clearTip();
-    clearLinkPreviews();
-    for (const g of ghostLinks) g.remove();
-    ghostLinks.clear();
-    atlas.dataset.focus = active.kind;
+    for (const e of links.values()) e.group.classList.remove("is-lit");
+    for (const n of nodes.values()) n.classList.remove("is-lit");
+    litPreview = null;
+    atlas.dataset.focus = indexOpen ? "papers" : active.kind;
     atlas.classList.toggle("index-open", indexOpen);
-    syncIntro();
+    syncRail();
     buildControls();
     renderCaption();
-    renderNotes();
-    measureViewport();
-    noteMetrics();
+    renderCard();
+    renderIndex();
     syncPortals();
-    atlas.classList.toggle("reading", !!showNote && !indexOpen);
-    transition(
-      animate,
-      savedCam,
-      indexOpen || (!animate && !!camera && mast.inert),
-    );
-    const shown = !drawer.hidden
-      ? drawer
-      : !card.hidden
-        ? card
-        : !theory.hidden
-          ? theory
-          : null;
+    applyEmphasis();
+    measure();
+    transition(animate);
+    surface(animate);
+    if (revealTheory) {
+      revealTheory = false;
+      showTheory(animate);
+    }
+  }
+  function surface(animate) {
     noteEntrance?.cancel();
     captionEntrance?.cancel();
     for (const part of surfacing) part.cancel();
     surfacing = [];
     if (!animate || reduced.matches) return;
+    const rise = [
+      { opacity: 0, translate: "0 9px", filter: "blur(2px)" },
+      { opacity: 1, translate: "0 0", filter: "blur(0)" },
+    ];
+    const shown = !drawer.hidden ? drawer : !card.hidden ? card : null;
     if (shown) {
       noteEntrance = shown.animate(
         [
@@ -1676,63 +1643,41 @@
       const parts =
         shown === card
           ? card.querySelectorAll(":scope > :not(.card-close)")
-          : shown === theory
-            ? theory.querySelectorAll(
-                ".fw-modes,.fw-header,.fw-visual,.fw-companion",
-              )
-            : drawer.querySelectorAll(".drawer-heading,.pi-toolbar,.pi-group");
+          : drawer.querySelectorAll(".drawer-heading,.pi-toolbar,.pi-group");
       parts.forEach((part, i) =>
         surfacing.push(
-          part.animate(
-            [
-              { opacity: 0, translate: "0 9px", filter: "blur(2px)" },
-              { opacity: 1, translate: "0 0", filter: "blur(0)" },
-            ],
-            {
-              duration: 480,
-              delay: 170 + Math.min(i, 6) * 70,
-              easing: "cubic-bezier(.2,.7,.2,1)",
-              fill: "backwards",
-            },
-          ),
+          part.animate(rise, {
+            duration: 480,
+            delay: 170 + Math.min(i, 6) * 70,
+            easing: "cubic-bezier(.2,.7,.2,1)",
+            fill: "backwards",
+          }),
         ),
       );
     }
     if (!caption.hidden)
-      captionEntrance = caption.animate(
-        [
-          { opacity: 0, translate: "0 8px", filter: "blur(3px)" },
-          { opacity: 1, translate: "0 0", filter: "blur(0)" },
-        ],
-        {
-          duration: 640,
-          delay: 320,
-          easing: "cubic-bezier(.2,.7,.2,1)",
-          fill: "backwards",
-        },
+      [...caption.children].forEach((part, i) =>
+        surfacing.push(
+          part.animate(rise, {
+            duration: 560,
+            delay: 300 + i * 90,
+            easing: "cubic-bezier(.2,.7,.2,1)",
+            fill: "backwards",
+          }),
+        ),
       );
   }
-  function stopTravel() {
-    cancelAnimationFrame(frame);
-    travelling = false;
-    if (!layoutResult || !camera) return;
-    world = Object.fromEntries(
-      [...visibleKeys].map((k) => [k, world[k] || layoutResult.world[k]]),
-    );
-    for (const [k, n] of nodes) if (!visibleKeys.has(k)) n.hidden = true;
-    for (const e of links.values()) e.born = -10000;
-    clearTip();
-  }
+
+  // ── Camera controls ────────────────────────────────────────────────────
   function local(e) {
     const rect = stage.getBoundingClientRect();
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }
   function zoom(factor, at, smooth = false) {
     if (!camera) return;
-    dismissIntro();
     stopTravel();
     const old = camera.scale,
-      scale = clamp(old * factor, 0.23, 2.4),
+      scale = clamp(old * factor, 0.18, 2.4),
       ratio = scale / old;
     const dest = {
       x: at.x - (at.x - camera.x) * ratio,
@@ -1745,50 +1690,27 @@
       paint();
     }
   }
-  function fit() {
-    if (!layoutResult) return;
-    remember();
-    showNote = false;
-    indexOpen = false;
+  const centreOfMap = () => {
+    const r = mapRect();
+    return { x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2 };
+  };
+  function overview() {
+    if (location.hash !== "#atlas") return navigate("#atlas");
     active = { kind: "home" };
-    introDismissed = !!(groups.size || read.size || theoryOpen);
-    if (location.hash !== "#atlas") {
-      history.pushState(
-        { depth: (history.state?.depth || 0) + 1 },
-        "",
-        "#atlas",
-      );
-      lastURL = location.href;
-    }
-    update(true, introDismissed ? "fit" : null);
+    indexOpen = false;
+    update(true);
   }
-  function setLanguage(n) {
-    if (n === lang) return;
-    if (active.kind === "concept") {
-      const selected = theory.querySelector(".fw-control[aria-pressed=true]");
-      if (selected) active.index = Number(selected.dataset.id);
-    }
-    lang = n;
-    try {
-      localStorage.setItem("atlas-language", lang ? "en" : "zh");
-    } catch {}
-    const url = new URL(location.href);
-    url.searchParams.set("lang", lang ? "en" : "zh");
-    history.replaceState(history.state, "", url);
-    lastURL = location.href;
-    translateStatic();
-    update(false);
-  }
-  function closeReading() {
-    showNote = false;
-    update(false);
-    nodes.get(focusKey(active))?.focus({ preventScroll: true });
-  }
+
+  // ── Events ─────────────────────────────────────────────────────────────
   document.addEventListener("click", (e) => {
     const close = e.target.closest("[data-close]");
     if (close) {
       if (close.dataset.close === "index") closeIndex();
-      else closeReading();
+      else {
+        showNote = false;
+        update(false);
+        nodes.get(paperKey(active.id))?.focus({ preventScroll: true });
+      }
       return;
     }
     const a = e.target.closest('a[href^="#"]');
@@ -1808,38 +1730,52 @@
   $("#zh").onclick = () => setLanguage(0);
   $("#en").onclick = () => setLanguage(1);
   $("#back-step").onclick = () => {
-    if (history.state?.depth) {
-      history.back();
-      return;
-    }
-    if (indexOpen) {
-      closeIndex();
-      return;
-    }
+    if (history.state?.depth) return history.back();
+    if (indexOpen) return closeIndex();
     if (active.kind === "paper") navigate("#field/" + owner[active.id].id);
     else navigate("#atlas");
   };
-  $("#view-all").onclick = fit;
-  $("#zoom-in").onclick = () =>
-    zoom(1.24, { x: stage.clientWidth / 2, y: stage.clientHeight / 2 }, true);
-  $("#zoom-out").onclick = () =>
-    zoom(
-      1 / 1.24,
-      { x: stage.clientWidth / 2, y: stage.clientHeight / 2 },
-      true,
-    );
+  $("#view-all").onclick = overview;
+  $("#zoom-in").onclick = () => zoom(1.24, centreOfMap(), true);
+  $("#zoom-out").onclick = () => zoom(1 / 1.24, centreOfMap(), true);
+  railHandle.onclick = () => {
+    railOpen = !railOpen;
+    syncRail();
+    measure();
+    transition(true);
+    if (railOpen) showTheory(false);
+  };
+  function setLanguage(n) {
+    if (n === lang) return;
+    lang = n;
+    try {
+      localStorage.setItem("atlas-language", lang ? "en" : "zh");
+    } catch {}
+    const url = new URL(location.href);
+    url.searchParams.set("lang", lang ? "en" : "zh");
+    history.replaceState(history.state, "", url);
+    lastURL = location.href;
+    translateStatic();
+    update(false);
+  }
   const getEdge = (target) => links.get(target.closest(".edge")?.dataset.id);
   map.addEventListener("pointerover", (e) => {
     const item = getEdge(e.target);
-    if (item && e.pointerType !== "touch" && !travelling) showTip(item);
+    if (
+      item &&
+      e.pointerType !== "touch" &&
+      !travelling &&
+      !item.group.classList.contains("is-far")
+    )
+      showTip(item);
   });
   map.addEventListener("pointerout", (e) => {
     const item = getEdge(e.target);
     if (item && !item.group.contains(e.relatedTarget) && !pinned) clearTip();
   });
   map.addEventListener("focusin", (e) => {
-    const edge = getEdge(e.target);
-    if (edge) showTip(edge);
+    const item = getEdge(e.target);
+    if (item) showTip(item);
   });
   map.addEventListener("focusout", () => {
     if (!pinned) clearTip();
@@ -1880,12 +1816,19 @@
     trace(e.target, false);
     hidePreview();
   });
-  for (const host of [card, mast, drawer, $("#portals")]) {
+  for (const host of [card, caption, drawer, portals, $("#rail-head")]) {
     host.addEventListener("pointerover", (e) => linkPreview(e.target, true));
     host.addEventListener("pointerout", (e) => linkPreview(e.target, false));
     host.addEventListener("focusin", (e) => linkPreview(e.target, true));
     host.addEventListener("focusout", (e) => linkPreview(e.target, false));
   }
+
+  const pointers = new Map();
+  let drag = null,
+    pinch = null,
+    dragging = false,
+    ignoreClick = false;
+  const readingSurface = "#node-card,#index-drawer,#tip,#field-caption a";
   function pinchState() {
     const [a, b] = [...pointers.values()];
     return {
@@ -1893,15 +1836,11 @@
       mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 },
     };
   }
-  let dragging = false,
-    ignoreClick = false;
-  const readingSurface = "#node-card,#theory,#index-drawer,#tip";
   function beginDrag() {
     if (dragging) return;
     dragging = true;
     ignoreClick = true;
     stopTravel();
-    dismissIntro();
     for (const id of pointers.keys()) stage.setPointerCapture(id);
     stage.classList.add("dragging");
     stage.focus({ preventScroll: true });
@@ -1942,18 +1881,8 @@
     pinch = null;
     drag = [...pointers.values()][0] || null;
     if (!drag) {
-      const wasDragging = dragging;
       dragging = false;
       stage.classList.remove("dragging");
-      if (
-        wasDragging &&
-        [...visibleKeys].some(
-          (k) =>
-            Math.abs((world[k]?.x ?? 0) - layoutResult.world[k].x) > 1 ||
-            Math.abs((world[k]?.y ?? 0) - layoutResult.world[k].y) > 1,
-        )
-      )
-        transition(true, { ...camera });
     }
   }
   stage.addEventListener("pointerup", release);
@@ -1988,6 +1917,11 @@
     },
     { passive: false },
   );
+  stage.addEventListener("dblclick", (e) => {
+    if (e.target.closest(readingSurface + ",button,a,.edge")) return;
+    e.preventDefault();
+    zoom(e.shiftKey ? 1 / 1.6 : 1.6, local(e), true);
+  });
   stage.addEventListener("keydown", (e) => {
     if (e.target !== stage) return;
     const directions = {
@@ -1999,34 +1933,31 @@
     if (directions[e.key]) {
       e.preventDefault();
       stopTravel();
-      dismissIntro();
       camera.x += directions[e.key][0];
       camera.y += directions[e.key][1];
       paint();
     } else if (["+", "=", "-"].includes(e.key)) {
       e.preventDefault();
-      zoom(e.key === "-" ? 0.8 : 1.25, {
-        x: stage.clientWidth / 2,
-        y: stage.clientHeight / 2,
-      });
+      zoom(e.key === "-" ? 0.8 : 1.25, centreOfMap());
     } else if (e.key === "Home") {
       e.preventDefault();
-      fit();
+      overview();
     }
-  });
-  // Double-click the open sky to zoom in there; Shift + double-click zooms out.
-  stage.addEventListener("dblclick", (e) => {
-    if (e.target.closest(readingSurface + ",button,a,.edge")) return;
-    e.preventDefault();
-    zoom(e.shiftKey ? 1 / 1.6 : 1.6, local(e), true);
   });
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
     if (!tip.hidden) clearTip();
     else if (indexOpen) closeIndex();
-    else if (showNote) closeReading();
+    else if (showNote && active.kind === "paper") {
+      showNote = false;
+      update(false);
+    } else if (railOpen && !wide.matches) {
+      railOpen = false;
+      syncRail();
+      measure();
+      transition(true);
+    }
   });
-  // Shortcuts that work wherever the visitor is not typing or using a theory diagram.
   document.addEventListener("keydown", (e) => {
     if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
     const target = e.target instanceof Element ? e.target : document.body;
@@ -2038,50 +1969,46 @@
       else navigate("#papers");
       return;
     }
-    if (target === stage || target.closest(readingSurface + ",.fw")) return;
+    // The theory's own controls use the arrow keys; elsewhere they walk the loop.
+    if (target === stage || target.closest(readingSurface + ",#theory-inner"))
+      return;
     if (["+", "=", "-"].includes(e.key)) {
       e.preventDefault();
-      zoom(
-        e.key === "-" ? 1 / 1.24 : 1.24,
-        { x: stage.clientWidth / 2, y: stage.clientHeight / 2 },
-        true,
-      );
+      zoom(e.key === "-" ? 1 / 1.24 : 1.24, centreOfMap(), true);
       return;
     }
-    if (!active.guided || indexOpen) return;
+    if (!(active.kind === "field" && active.loop) || indexOpen) return;
     const step = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
-    const next = step && tour[tour.indexOf(active.id) + step];
+    const next = step && fields[ring(active.id) + step];
     if (next) {
       e.preventDefault();
-      navigate("#guide/" + next);
+      navigate("#loop/" + next.id);
     }
   });
-  window.addEventListener("pagehide", remember);
   window.addEventListener("popstate", restore);
   window.addEventListener("hashchange", restore);
   const viewportObserver = new ResizeObserver(() => {
     const previous = surfaceSize;
-    measureViewport();
-    if (previous !== surfaceSize) {
-      noteMetrics();
-      transition(false);
-    }
+    measure();
+    if (previous !== surfaceSize) transition(false);
   });
-  for (const el of [stage, mast, header, toolbar, tourBar])
+  for (const el of [stage, header, toolbar, tourBar, rail])
     viewportObserver.observe(el);
-  // A theory selection can change the height of its anchored reading without moving the camera.
-  const noteObserver = new ResizeObserver(() => {
-    noteMetrics();
-    if (camera) paint();
-  });
-  noteObserver.observe(card);
-  noteObserver.observe(theory);
+  new ResizeObserver(() => camera && paint()).observe(card);
   reduced.addEventListener("change", () => transition(false));
+  wide.addEventListener("change", () => {
+    railOpen = false;
+    syncRail();
+    measure();
+    transition(false);
+  });
+
+  // ── Start ──────────────────────────────────────────────────────────────
   createNodes();
+  createLinks();
   translateStatic();
-  active = parse(location.hash);
-  materialise(active);
-  indexOpen = location.hash === "#papers";
-  showNote = ["paper", "concept"].includes(active.kind);
+  enter(location.hash);
+  if (active.kind !== "theory") railOpen = false;
+  measure();
   update(false);
 })();

@@ -11,7 +11,7 @@
     include: ["同时搜索研究主题", "Include research topics"],
     results: ["项结果", "results"],
   };
-  const browse = { query: "", scope: "public" };
+  const browse = { query: "", scope: "all" };
 
   function element(tag, className, value) {
     const node = document.createElement(tag);
@@ -41,6 +41,7 @@
             [
               field.id,
               ...field.name,
+              ...(field.step || []),
               id,
               ...paper.short,
               ...paper.title,
@@ -57,9 +58,9 @@
           };
         });
       items.sort((a, b) => Number(b.released) - Number(a.released));
-      return { field, items, released: items.some((item) => item.released) };
+      return { field, items };
     });
-    groups.sort((a, b) => Number(b.released) - Number(a.released));
+    // Groups keep the order of the culture loop.
 
     const index = element("section", "paper-index");
     index.setAttribute(
@@ -108,8 +109,22 @@
         if (!visible.length) continue;
         const group = element("section", "pi-group");
         group.dataset.field = field.id;
-        const name = field.name[lang];
-        group.append(element("h3", "pi-field", name));
+        // Each heading leads to its constellation on the map.
+        const heading = element("h3", "pi-field");
+        const fieldLink = element("a", "pi-field-link");
+        fieldLink.href = "#field/" + encodeURIComponent(field.id);
+        fieldLink.dataset.field = field.id;
+        if (field.stage)
+          fieldLink.append(
+            element(
+              "span",
+              "pi-stage",
+              "①②③④⑤"[field.stage - 1] + " " + (field.step?.[lang] || ""),
+            ),
+          );
+        fieldLink.append(element("span", "pi-name", field.name[lang]));
+        heading.append(fieldLink);
+        group.append(heading);
         const list = element("ul", "pi-list");
         for (const item of visible) {
           const row = element("li");
