@@ -766,6 +766,7 @@
         " " +
         (y > p.y ? y : y + noteSize.h),
     );
+    return { left: x, right: x + noteSize.w, top: y, bottom: y + noteSize.h };
   }
   function syncPortals() {
     const nav = $("#portals");
@@ -784,9 +785,18 @@
       nav.append(a);
     }
   }
-  function positionPortals(screen, w, h) {
+  function positionPortals(screen, w, h, note) {
     const anchor = screen[currentFocus];
     if (!anchor) return;
+    const occupied = [
+      {
+        left: anchor.x - 56,
+        right: anchor.x + 56,
+        top: anchor.y - 16,
+        bottom: anchor.y + 36,
+      },
+    ];
+    if (note) occupied.push(note);
     for (const portal of $("#portals").children) {
       const target = screen[paperKey(portal.dataset.jump)];
       if (!target) {
@@ -823,10 +833,44 @@
             ? (py - anchor.y) / dy
             : Infinity;
       const u = clamp(Math.min(fx, fy), 0, 1);
+      const ideal = {
+        x: clamp(anchor.x + dx * u, px, w - px),
+        y: clamp(anchor.y + dy * u, py, h - 37),
+      };
+      const options = [ideal];
+      for (let y = py; y <= h - 35; y += 38)
+        options.push({ x: px, y }, { x: w - px, y });
+      for (let x = px; x <= w - px; x += 80)
+        options.push({ x, y: py }, { x, y: h - 35 });
+      const distance = (p) => Math.hypot(p.x - ideal.x, p.y - ideal.y);
+      options.sort((a, b) => distance(a) - distance(b));
+      const halfWidth = Math.min(68, px);
+      const pos = options.find((p) =>
+        occupied.every(
+          (r) =>
+            p.x + halfWidth < r.left ||
+            p.x - halfWidth > r.right ||
+            p.y + 23 < r.top ||
+            p.y - 23 > r.bottom,
+        ),
+      );
+      if (!pos) {
+        portal.hidden = true;
+        continue;
+      }
+      occupied.push({
+        left: pos.x - halfWidth,
+        right: pos.x + halfWidth,
+        top: pos.y - 18,
+        bottom: pos.y + 18,
+      });
       portal.hidden = false;
-      portal.style.left = clamp(anchor.x + dx * u, px, w - px) + "px";
-      portal.style.top = clamp(anchor.y + dy * u, py, h - 37) + "px";
-      portal.style.setProperty("--bearing", Math.atan2(dy, dx) + "rad");
+      portal.style.left = pos.x + "px";
+      portal.style.top = pos.y + "px";
+      portal.style.setProperty(
+        "--bearing",
+        Math.atan2(target.y - pos.y, target.x - pos.x) + "rad",
+      );
     }
   }
   function paint(now = performance.now()) {
@@ -883,8 +927,8 @@
         mid.x > 0 && mid.x < w && mid.y > 0 && mid.y < h ? "0" : "-1",
       );
     }
-    displayNote();
-    positionPortals(screen, w, h);
+    const note = displayNote();
+    positionPortals(screen, w, h, note);
   }
   function clearTip() {
     pinned = null;
