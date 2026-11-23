@@ -244,11 +244,9 @@
     u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
 
   let lang = +!navigator.language.toLowerCase().startsWith("zh");
-  let tuckedAtStart = false;
   try {
     const saved = localStorage.getItem("atlas-language");
     if (saved) lang = +(saved === "en");
-    tuckedAtStart = localStorage.getItem("atlas-rail") === "tucked";
   } catch {}
   const urlLang = new URL(location.href).searchParams.get("lang");
   if (["en", "zh"].includes(urlLang)) lang = +(urlLang === "en");
@@ -1063,7 +1061,7 @@
       },
     };
   }
-  function transition(animate, target = null) {
+  function transition(animate, target = null, pace = {}) {
     cancelAnimationFrame(frame);
     const to = target || targetCamera();
     if (!camera || !animate || reduced.matches) {
@@ -1077,8 +1075,8 @@
       began = performance.now();
     travelling = true;
     function tick(now) {
-      const u = clamp((now - began) / path.duration, 0, 1);
-      camera = path.camAt(easeInOut(u));
+      const u = clamp((now - began) / (pace.duration || path.duration), 0, 1);
+      camera = path.camAt((pace.ease || easeInOut)(u));
       paint();
       if (u < 1) frame = requestAnimationFrame(tick);
       else travelling = false;
@@ -1761,12 +1759,8 @@
   $("#zoom-in").onclick = () => zoom(1.24, centreOfMap(), true);
   $("#zoom-out").onclick = () => zoom(1 / 1.24, centreOfMap(), true);
   railHandle.onclick = () => {
-    if (wide.matches) {
-      railTucked = !railTucked;
-      try {
-        localStorage.setItem("atlas-rail", railTucked ? "tucked" : "open");
-      } catch {}
-    } else railOpen = !railOpen;
+    if (wide.matches) railTucked = !railTucked;
+    else railOpen = !railOpen;
     syncRail();
     measure();
     transition(true);
@@ -2030,13 +2024,103 @@
     transition(false);
   });
 
+  // ── Entrance ───────────────────────────────────────────────────────────
+  // The rail slides in and its words surface; the sky drifts closer while
+  // the constellations light in the order of the culture loop, each
+  // followed by its papers, then the lines between them, then the controls.
+  function entrance() {
+    document.documentElement.classList.remove("booting");
+    if (reduced.matches || !camera) return;
+    const soft = "cubic-bezier(.2,.7,.2,1)";
+    const play = (el, from, delay, duration = 720, easing = soft) =>
+      // A lone keyframe at offset 0 animates from it to the element's own style.
+      el?.animate([{ ...from, offset: 0 }], {
+        duration,
+        delay,
+        easing,
+        fill: "backwards",
+      });
+    play(sky, { opacity: 0 }, 0, 1500, "ease-out");
+    play(header, { opacity: 0 }, 260, 900);
+    play(
+      rail,
+      { transform: wide.matches ? "translateX(-100%)" : "translateY(100%)" },
+      120,
+      1050,
+      "cubic-bezier(.16,.84,.24,1)",
+    );
+    [...$("#rail-head").children, $(".rail-theory")].forEach((el, i) =>
+      play(el, { opacity: 0, translate: "0 14px" }, 520 + i * 120, 780),
+    );
+    // The view starts a little farther out and settles on its frame.
+    const target = targetCamera(),
+      r = mapRect();
+    const cx = (r.left + r.right) / 2,
+      cy = (r.top + r.bottom) / 2,
+      s0 = target.scale * 0.8;
+    camera = {
+      scale: s0,
+      x: cx - ((cx - target.x) / target.scale) * s0,
+      y: cy - ((cy - target.y) / target.scale) * s0,
+    };
+    paint();
+    transition(true, target, {
+      duration: 2100,
+      ease: (u) => 1 - Math.pow(1 - u, 3),
+    });
+    const at = new Map();
+    fields.forEach((f, i) => {
+      const lit = 560 + i * 170;
+      at.set(fieldKey(f.id), lit);
+      f.papers.forEach((p, j) => at.set(paperKey(p), lit + 170 + j * 90));
+    });
+    at.set("loop", 560 + fields.length * 170 + 40);
+    for (const [key, delay] of at) {
+      const el = nodes.get(key);
+      play(el, { opacity: 0 }, delay, 640, "ease-out");
+      play(
+        el.querySelector(".coin, .star, .loop-glyph"),
+        { scale: 0.4 },
+        delay,
+        820,
+        "cubic-bezier(.25,1.35,.35,1)",
+      );
+      play(
+        el.querySelector(".node-label"),
+        { opacity: 0, translate: "-50% 6px" },
+        delay + 170,
+        720,
+      );
+    }
+    for (const e of links.values())
+      play(
+        e.group,
+        { opacity: 0 },
+        Math.max(at.get(e.a), at.get(e.b)) + 200,
+        900,
+        "ease-out",
+      );
+    const settled = 560 + fields.length * 170 + 420;
+    const callout = $("#callout-line");
+    for (const el of [
+      toolbar,
+      tourBar,
+      caption,
+      card,
+      drawer,
+      portals,
+      callout,
+    ])
+      if (!el.hidden) play(el, { opacity: 0 }, settled, 760);
+  }
+
   // ── Start ──────────────────────────────────────────────────────────────
   createNodes();
   createLinks();
   translateStatic();
-  railTucked = tuckedAtStart;
   enter(location.hash);
   if (active.kind !== "theory") railOpen = false;
   measure();
   update(false);
+  entrance();
 })();

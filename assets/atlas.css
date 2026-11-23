@@ -58,6 +58,10 @@ p {
 [hidden] {
   display: none !important;
 }
+/* Until the entrance begins, what it brings in stays out of sight. */
+.booting :is(.head, .rail, .sky-controls, .night-sky) {
+  visibility: hidden;
+}
 .sky-page noscript {
   position: fixed;
   inset: 30% 10% auto;
