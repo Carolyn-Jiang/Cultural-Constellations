@@ -49,11 +49,101 @@ body {
 .night-sky.sky-paused canvas {
   animation-play-state: paused;
 }
+/* Twinkling stars ride their layer and dim a little, slowly, on their own. */
+.night-sky .twinkle {
+  position: absolute;
+  inset: -48px;
+}
+.night-sky .twinkle i {
+  position: absolute;
+  translate: -50% -50%;
+  border-radius: 50%;
+  animation: star-twinkle 4s ease-in-out infinite alternate;
+}
+@keyframes star-twinkle {
+  to {
+    opacity: var(--dim, 0.7);
+  }
+}
+.night-sky.sky-paused :is(.twinkle, .twinkle i) {
+  animation-play-state: paused;
+}
+/* A shooting star: a small upright four-pointed star leading a fine trail
+   that is brightest beside it and fades with distance. The element sits on
+   the star and turns towards its path. */
+.night-sky .meteor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.night-sky .meteor::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--head) * -1.2);
+  top: calc(var(--head) * -1.2);
+  width: calc(var(--head) * 2.4);
+  height: calc(var(--head) * 2.4);
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgba(234, 226, 204, 0.16),
+    rgba(234, 226, 204, 0)
+  );
+}
+.night-sky .meteor-trail {
+  position: absolute;
+  right: 0;
+  top: calc(var(--head) * -0.11);
+  width: var(--tail);
+  height: max(1px, calc(var(--head) * 0.22));
+  transform-origin: 100% 50%;
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(214, 204, 180, 0),
+    rgba(214, 204, 180, 0.05) 38%,
+    rgba(222, 212, 190, 0.2) 72%,
+    rgba(232, 224, 204, 0.6)
+  );
+}
+.night-sky .meteor-star {
+  position: absolute;
+  left: calc(var(--head) * -0.5);
+  top: calc(var(--head) * -0.5);
+  width: var(--head);
+  height: var(--head);
+  rotate: calc(var(--turn, 0deg) * -1);
+  clip-path: polygon(
+    50% 0,
+    60% 40%,
+    100% 50%,
+    60% 60%,
+    50% 100%,
+    40% 60%,
+    0 50%,
+    40% 40%
+  );
+  background: radial-gradient(
+    closest-side,
+    rgba(246, 240, 224, 0.95),
+    rgba(230, 220, 196, 0.78)
+  );
+}
 @media (prefers-reduced-motion: reduce) {
   .night-sky .sky-distant,
   .night-sky .sky-near {
     animation: none;
     translate: none;
+  }
+  .night-sky .meteor {
+    display: none;
+  }
+  .night-sky .twinkle i {
+    animation: none;
   }
 }
 @media (forced-colors: active), print {

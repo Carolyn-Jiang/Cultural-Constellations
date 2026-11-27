@@ -9,9 +9,21 @@
     sky.append(canvas);
     return canvas;
   });
+  // A few stars of each layer twinkle: they live as dots in a twin layer
+  // that drifts with it, each brightening and dimming slowly on its own.
+  const twinkleLayers = ["sky-distant", "sky-near"].map((name) => {
+    const layer = document.createElement("div");
+    layer.className = name + " twinkle";
+    sky.append(layer);
+    return layer;
+  });
   document.body.prepend(sky);
 
   const colors = ["188,206,225", "222,227,227", "226,204,164"];
+  // The sky stays quiet behind the map: stars at 70% of their old brightness
+  // and 80% of their old number.
+  const glow = 0.7,
+    density = 0.8;
   function drawLayer(canvas, foreground) {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
@@ -41,22 +53,27 @@
     }
 
     const area = width * height;
-    const count = foreground
-      ? Math.min(185, Math.round(area / 10200))
-      : Math.min(890, Math.round(area / 2750));
+    const count = Math.round(
+      density *
+        (foreground ? Math.min(185, area / 10200) : Math.min(890, area / 2750)),
+    );
+    const twinkling = [];
     for (let i = 0; i < count; i++) {
       const x = random() * width;
       const y = random() * height;
       const radius = foreground
         ? 0.67 + 0.55 * random()
         : 0.34 + 0.51 * random();
-      const alpha = foreground
-        ? 0.55 + 0.28 * random()
-        : 0.26 + 0.35 * random();
+      const alpha =
+        glow * (foreground ? 0.55 + 0.28 * random() : 0.26 + 0.35 * random());
       const color = colors[Math.floor(random() * colors.length)];
+      if (foreground ? i % 3 === 1 : i % 20 === 7) {
+        twinkling.push(twinkleDot(x, y, radius, color, alpha));
+        continue;
+      }
       if (foreground && i % 13 === 0) {
         const halo = context.createRadialGradient(x, y, 0, x, y, radius * 4.5);
-        halo.addColorStop(0, "rgba(" + color + ",0.30)");
+        halo.addColorStop(0, "rgba(" + color + "," + 0.3 * glow + ")");
         halo.addColorStop(1, "rgba(" + color + ",0)");
         context.fillStyle = halo;
         context.fillRect(x - 6, y - 6, 12, 12);
@@ -66,6 +83,33 @@
       context.arc(x, y, radius, 0, Math.PI * 2);
       context.fill();
     }
+    twinkleLayers[foreground ? 1 : 0].replaceChildren(...twinkling);
+  }
+  // Slow and shallow: each dims to 60–80% and back over 6–12 s.
+  function twinkleDot(x, y, radius, color, alpha) {
+    const dot = document.createElement("i");
+    const half = 3 + Math.random() * 3;
+    dot.style.cssText =
+      "left:" +
+      x.toFixed(1) +
+      "px;top:" +
+      y.toFixed(1) +
+      "px;width:" +
+      (radius * 2).toFixed(2) +
+      "px;height:" +
+      (radius * 2).toFixed(2) +
+      "px;background:rgba(" +
+      color +
+      "," +
+      alpha.toFixed(2) +
+      ");--dim:" +
+      (0.6 + Math.random() * 0.2).toFixed(2) +
+      ";animation-duration:" +
+      half.toFixed(2) +
+      "s;animation-delay:-" +
+      (Math.random() * half * 2).toFixed(2) +
+      "s";
+    return dot;
   }
 
   let pending = 0;
@@ -77,11 +121,112 @@
   function scheduleDraw() {
     if (!pending && !document.hidden) pending = requestAnimationFrame(draw);
   }
+  // Shooting stars: every 6–14 s, at random, one crosses the open part of the
+  // sky from upper left to lower right. Each is a small four-pointed star a
+  // quarter to two-fifths the size of a lit star on the map, much fainter, with a
+  // fine trail that brightens towards it.
+  const still = matchMedia("(prefers-reduced-motion: reduce)");
+  let meteorTimer = 0,
+    starInk = 0;
+  // The visible size of a lit star: the ink of its glyph, not its box.
+  function litStarSize() {
+    if (starInk) return starInk;
+    const star = document.querySelector(".pnode.public .star");
+    const pen = document.createElement("canvas").getContext("2d");
+    if (!star || !pen) return 16;
+    const style = getComputedStyle(star);
+    pen.font = style.fontSize + " " + style.fontFamily;
+    const ink = pen.measureText(star.textContent.trim() || "✦");
+    const size = Math.max(
+      ink.actualBoundingBoxLeft + ink.actualBoundingBoxRight,
+      ink.actualBoundingBoxAscent + ink.actualBoundingBoxDescent,
+    );
+    if (size > 4) starInk = size;
+    return size > 4 ? size : 16;
+  }
+  // The sky the foundation rail (or, on phones, its sheet) leaves in view.
+  function openSky() {
+    const w = window.innerWidth,
+      h = window.innerHeight;
+    const open = { left: 0, top: 0, right: w, bottom: h };
+    const rail = document.getElementById("foundation")?.getBoundingClientRect();
+    if (rail && rail.width && rail.height) {
+      if (rail.left <= 1 && rail.height > h * 0.6 && rail.right < w * 0.7)
+        open.left = Math.max(0, rail.right);
+      else if (rail.bottom >= h - 1 && rail.width > w * 0.6)
+        open.bottom = Math.min(h, rail.top);
+    }
+    return open;
+  }
+  function launch() {
+    const open = openSky();
+    const width = open.right - open.left,
+      height = open.bottom - open.top;
+    if (width < 140 || height < 120) return;
+    const head = litStarSize() * (0.25 + Math.random() * 0.15);
+    const angle = 26 + Math.random() * 16;
+    const travel =
+      Math.min(Math.hypot(width, height) * 0.42, 420) *
+      (0.7 + Math.random() * 0.35);
+    const dx = travel * Math.cos((angle * Math.PI) / 180),
+      dy = travel * Math.sin((angle * Math.PI) / 180);
+    const meteor = document.createElement("i");
+    meteor.className = "meteor";
+    const trail = document.createElement("b"),
+      spark = document.createElement("b");
+    trail.className = "meteor-trail";
+    spark.className = "meteor-star";
+    meteor.append(trail, spark);
+    meteor.style.setProperty("--head", head.toFixed(1) + "px");
+    meteor.style.setProperty("--tail", Math.round(head * 15) + "px");
+    meteor.style.setProperty("--turn", angle.toFixed(1) + "deg");
+    meteor.style.left =
+      open.left + Math.random() * Math.max(1, width - dx) + "px";
+    meteor.style.top =
+      open.top + Math.random() * Math.max(1, height - dy) + "px";
+    meteor.style.rotate = angle.toFixed(1) + "deg";
+    sky.append(meteor);
+    // About a third of a pixel per millisecond across a typical path.
+    const duration = (700 + travel * 1.5) / 1.3;
+    const path = meteor.animate(
+      [{ translate: "0 0" }, { translate: dx + "px " + dy + "px" }],
+      { duration, easing: "cubic-bezier(.3,.55,.45,1)" },
+    );
+    meteor.animate(
+      [
+        { opacity: 0 },
+        { opacity: 0.85, offset: 0.16 },
+        { opacity: 0.85, offset: 0.58 },
+        { opacity: 0 },
+      ],
+      { duration },
+    );
+    // The trail lengthens as the star enters the sky.
+    trail.animate(
+      [{ scale: "0.2 1" }, { scale: "1 1", offset: 0.36 }, { scale: "1 1" }],
+      { duration, easing: "ease-out" },
+    );
+    path.onfinish = path.oncancel = () => meteor.remove();
+  }
+  function planMeteor() {
+    clearTimeout(meteorTimer);
+    if (still.matches || document.hidden) return;
+    meteorTimer = setTimeout(
+      () => {
+        launch();
+        planMeteor();
+      },
+      6000 + Math.random() * 8000,
+    );
+  }
+
   function syncVisibility() {
     sky.classList.toggle("sky-paused", document.hidden);
     if (!document.hidden) scheduleDraw();
+    planMeteor();
   }
   window.addEventListener("resize", scheduleDraw, { passive: true });
   document.addEventListener("visibilitychange", syncVisibility);
+  still.addEventListener("change", planMeteor);
   syncVisibility();
 })();
