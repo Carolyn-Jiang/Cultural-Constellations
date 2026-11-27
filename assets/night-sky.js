@@ -121,13 +121,18 @@
   function scheduleDraw() {
     if (!pending && !document.hidden) pending = requestAnimationFrame(draw);
   }
-  // Shooting stars: every 6–14 s, at random, one crosses the open part of the
-  // sky from upper left to lower right. Each is a small four-pointed star a
-  // quarter to two-fifths the size of a lit star on the map, much fainter, with a
-  // fine trail that brightens towards it.
+  // Shooting stars cross the open part of the sky from upper left to lower
+  // right. Each is a small four-pointed star a quarter to two-fifths the size
+  // of a lit star on the map, much fainter, with a fine trail that brightens
+  // towards it. For the first 9–15 s none come, so the sky seems still; then
+  // one comes every 6–14 s, at first only of middling length. The first long
+  // one, crossing most of the sky, is the second, third or fourth to come;
+  // after it, about one in four is long.
   const still = matchMedia("(prefers-reduced-motion: reduce)");
   let meteorTimer = 0,
-    starInk = 0;
+    starInk = 0,
+    meteorsSeen = 0;
+  const firstLong = 2 + Math.floor(Math.random() * 3);
   // The visible size of a lit star: the ink of its glyph, not its box.
   function litStarSize() {
     if (starInk) return starInk;
@@ -158,18 +163,25 @@
     }
     return open;
   }
-  function launch() {
+  function launch(long) {
     const open = openSky();
     const width = open.right - open.left,
       height = open.bottom - open.top;
-    if (width < 140 || height < 120) return;
+    if (width < 140 || height < 120) return false;
     const head = litStarSize() * (0.25 + Math.random() * 0.15);
-    const angle = 26 + Math.random() * 16;
-    const travel =
-      Math.min(Math.hypot(width, height) * 0.42, 420) *
-      (0.7 + Math.random() * 0.35);
-    const dx = travel * Math.cos((angle * Math.PI) / 180),
-      dy = travel * Math.sin((angle * Math.PI) / 180);
+    // A tall strip of sky (a phone) takes a steeper path, so long ones fit.
+    const angle =
+      height > width * 1.1 ? 38 + Math.random() * 20 : 26 + Math.random() * 16;
+    const cos = Math.cos((angle * Math.PI) / 180),
+      sin = Math.sin((angle * Math.PI) / 180);
+    // Path length: a share of the open sky's diagonal, never more than fits.
+    const share = long
+      ? 0.72 + Math.random() * 0.23
+      : 0.36 + Math.random() * 0.26;
+    const room = Math.min(width / cos, height / sin) * 0.97;
+    const travel = Math.min(share * Math.hypot(width, height), room);
+    const dx = travel * cos,
+      dy = travel * sin;
     const meteor = document.createElement("i");
     meteor.className = "meteor";
     const trail = document.createElement("b"),
@@ -178,7 +190,11 @@
     spark.className = "meteor-star";
     meteor.append(trail, spark);
     meteor.style.setProperty("--head", head.toFixed(1) + "px");
-    meteor.style.setProperty("--tail", Math.round(head * 15) + "px");
+    // Longer paths draw longer trails.
+    meteor.style.setProperty(
+      "--tail",
+      Math.round(Math.min(240, Math.max(head * 12, travel * 0.2))) + "px",
+    );
     meteor.style.setProperty("--turn", angle.toFixed(1) + "deg");
     meteor.style.left =
       open.left + Math.random() * Math.max(1, width - dx) + "px";
@@ -207,16 +223,21 @@
       { duration, easing: "ease-out" },
     );
     path.onfinish = path.oncancel = () => meteor.remove();
+    return true;
   }
   function planMeteor() {
     clearTimeout(meteorTimer);
     if (still.matches || document.hidden) return;
+    const first = meteorsSeen === 0;
     meteorTimer = setTimeout(
       () => {
-        launch();
+        const next = meteorsSeen + 1;
+        const long =
+          next === firstLong || (next > firstLong && Math.random() < 0.25);
+        if (launch(long)) meteorsSeen++;
         planMeteor();
       },
-      6000 + Math.random() * 8000,
+      first ? 9000 + Math.random() * 6000 : 6000 + Math.random() * 8000,
     );
   }
 
