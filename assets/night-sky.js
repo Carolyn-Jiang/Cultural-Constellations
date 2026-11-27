@@ -20,10 +20,10 @@
   document.body.prepend(sky);
 
   const colors = ["188,206,225", "222,227,227", "226,204,164"];
-  // The sky stays quiet behind the map: stars at 70% of their old brightness
-  // and 80% of their old number.
+  // The sky stays quiet behind the map: stars at 70% of their original
+  // brightness and 88% of their original number.
   const glow = 0.7,
-    density = 0.8;
+    density = 0.88;
   function drawLayer(canvas, foreground) {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
